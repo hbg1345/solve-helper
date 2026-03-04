@@ -58,8 +58,12 @@ export function parseHintsFromMessage(text: string): {
   const jsonBlocks = extractJsonBlocks(text);
 
   for (const block of jsonBlocks) {
+    // LaTeX-JSON escape 충돌 해결: \binom→\\binom, \frac→\\frac, \theta→\\theta 등
+    // \b \f \n \r \t는 유효한 JSON 이스케이프지만 뒤에 영문자가 오면 LaTeX 명령어
+    const preprocessed = block.replace(/(?<!\\)\\([bfnrt])(?=[a-zA-Z])/g, '\\\\$1');
+
     try {
-      const parsed = JSON.parse(block);
+      const parsed = JSON.parse(preprocessed);
 
       if (parsed?.type === "hint" && parsed?.content) {
         hintContents.push(parsed.content);
@@ -68,9 +72,9 @@ export function parseHintsFromMessage(text: string): {
         resultText = resultText.replace(block, parsed.content).trim();
       }
     } catch {
-      // JSON.parse 실패 시 (LaTeX 백슬래시, 개행 등) 수정 후 재시도
+      // JSON.parse 실패 시 (기타 LaTeX 백슬래시 \pmod, \sum 등) 추가 이스케이프 후 재시도
       try {
-        const fixed = block
+        const fixed = preprocessed
           .replace(/[\r\n]+/g, ' ')
           .replace(/\\(?!["\\/bfnrtu])/g, '\\\\');
         const parsed = JSON.parse(fixed);

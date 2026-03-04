@@ -27,8 +27,8 @@ import { summarizeIfNeeded } from "@/lib/chat-summarization";
 
 const MODEL_NAME = "gemini-3-flash-preview";
 
-// Allow streaming responses up to 30 seconds
-export const maxDuration = 30;
+// Allow streaming responses up to 60 seconds
+export const maxDuration = 60;
 
 const tools: ToolSet = {
   fetchRecentContests: tool({
@@ -442,9 +442,13 @@ export async function POST(req: Request) {
    ✅ 올바른 예: $A_i$, $s_{i-1}$, $10^k$, $f(x)$
    ❌ 잘못된 예: A_i, s_{i-1}, 10^k, f(x)
    - 변수명, 수식, 지수, 아래첨자 모두 $ 필수
-   - JSON 내 백슬래시는 이중 이스케이프 필수:
-   ✅ {"content": "$A_i \\pmod{N}$"}
-   ❌ {"content": "$A_i \pmod{N}$"}
+   - JSON 내 LaTeX 백슬래시는 반드시 이중 이스케이프(\\\\):
+   ✅ {"content": "$\\\\binom{N}{k}$"}
+   ✅ {"content": "$\\\\frac{1}{2}$"}
+   ✅ {"content": "$A_i \\\\pmod{N}$"}
+   ❌ {"content": "$\\binom{N}{k}$"}  ← \\b가 백스페이스로 해석됨
+   ❌ {"content": "$\\frac{1}{2}$"}   ← \\f가 폼피드로 해석됨
+   - 특히 \\binom, \\frac, \\neq, \\theta, \\text, \\rightarrow 등 주의
 
 3. 길이 제한 (글자 수):
    - hint: 40자 이내
