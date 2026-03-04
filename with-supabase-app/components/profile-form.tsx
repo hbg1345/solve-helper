@@ -1,5 +1,5 @@
 "use client";
-import { useState, useTransition } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { AtcoderForm } from "./atcoder-form";
 import { UserInfoRow } from "@/types/supabase";
 import {
@@ -106,6 +106,10 @@ export function ProfileWithGrass({
   const [isPending, startTransition] = useTransition();
   const [refreshKey, setRefreshKey] = useState(0);
   const router = useRouter();
+
+  // router.refresh() 후 서버에서 새 props가 내려올 때 state 동기화
+  useEffect(() => { setRating(initialRating); }, [initialRating]);
+  useEffect(() => { setSolvedProblems(initialSolvedProblems); }, [initialSolvedProblems]);
 
   const handleRefresh = () => {
     if (!atcoder_handle) return;
