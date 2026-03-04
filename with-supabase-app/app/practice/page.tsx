@@ -3,6 +3,7 @@ import {
   getRatingRanges,
 } from "@/lib/atcoder/recommendations";
 import { ProblemLink } from "@/components/problem-link";
+import { Loader } from "@/components/ai-elements/loader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -302,7 +303,7 @@ function PracticeLoading() {
     <>
       <div className="flex flex-col gap-2 w-full">
         <h1 className="text-3xl font-bold tracking-tight">Challenge</h1>
-        <p className="text-foreground">로딩 중...</p>
+        <Loader />
       </div>
       <Card className="w-full">
         <CardHeader>

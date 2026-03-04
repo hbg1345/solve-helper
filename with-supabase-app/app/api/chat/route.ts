@@ -453,6 +453,9 @@ export async function POST(req: Request) {
    ✅ 올바른 예: $A_i$, $s_{i-1}$, $10^k$, $f(x)$
    ❌ 잘못된 예: A_i, s_{i-1}, 10^k, f(x)
    - 변수명, 수식, 지수, 아래첨자 모두 $ 필수
+   - JSON 내 백슬래시는 이중 이스케이프 필수:
+   ✅ {"content": "$A_i \\pmod{N}$"}
+   ❌ {"content": "$A_i \pmod{N}$"}
 
 3. 길이 제한 (글자 수):
    - hint: 40자 이내

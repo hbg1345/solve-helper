@@ -68,7 +68,22 @@ export function parseHintsFromMessage(text: string): {
         resultText = resultText.replace(block, parsed.content).trim();
       }
     } catch {
-      // JSON 파싱 실패 - 무시
+      // JSON.parse 실패 시 (LaTeX 백슬래시, 개행 등) 수정 후 재시도
+      try {
+        const fixed = block
+          .replace(/[\r\n]+/g, ' ')
+          .replace(/\\(?!["\\/bfnrtu])/g, '\\\\');
+        const parsed = JSON.parse(fixed);
+
+        if (parsed?.type === "hint" && parsed?.content) {
+          hintContents.push(parsed.content);
+          resultText = resultText.replace(block, "").trim();
+        } else if (parsed?.type === "response" && parsed?.content) {
+          resultText = resultText.replace(block, parsed.content).trim();
+        }
+      } catch {
+        // 그래도 실패하면 무시
+      }
     }
   }
 

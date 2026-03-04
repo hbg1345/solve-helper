@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     const $ = cheerio.load(html);
 
     // 제목 추출
-    const title = $("span.h2").text().trim();
+    const title = $("span.h2").first().text().trim();
 
     // 시간/메모리 제한 추출 (콘텐츠 추출 전에 먼저)
     // 보통 "Time Limit: 2 sec / Memory Limit: 1024 MiB" 형식으로 한 줄에 있음

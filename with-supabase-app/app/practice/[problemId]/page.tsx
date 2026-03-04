@@ -1,4 +1,5 @@
 import { Suspense } from "react";
+import { Loader } from "@/components/ai-elements/loader";
 import PracticeClient from "./PracticeClient";
 
 interface PageProps {
@@ -15,7 +16,7 @@ export default function PracticePage({ params }: PageProps) {
     <Suspense
       fallback={
         <div className="w-full h-full flex items-center justify-center">
-          <div className="text-foreground">로딩 중...</div>
+          <Loader />
         </div>
       }
     >

@@ -21,13 +21,14 @@ import {
   PromptInputTextarea,
   PromptInputFooter,
 } from "@/components/ai-elements/prompt-input";
-import { useState, useEffect, useRef, useMemo } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useChat, type UIMessage } from "@ai-sdk/react";
 import { DefaultChatTransport } from "ai";
 import { CopyIcon, RefreshCcwIcon, AlertCircleIcon, SquareIcon, XIcon, CornerDownLeftIcon, VideoIcon } from "lucide-react";
 import {
   getChatHistory,
 } from "@/app/actions";
+import type { Hint } from "@/lib/hints";
 import { useChatLayout } from "./ChatLayoutContext";
 import {
   Source,
@@ -42,7 +43,6 @@ import {
 } from "@/components/ai-elements/reasoning";
 import { Loader } from "@/components/ai-elements/loader";
 import { HintsCard, parseHintsFromMessage } from "@/components/hints-card";
-import { extractAllHints } from "@/lib/hints";
 import {
   ProblemSelectCard,
   parseSearchResultsFromPart,
@@ -110,16 +110,10 @@ const ChatBotDemo = ({ chatId, onChatIdChange, initialProblemId }: ChatBotDemoPr
   const [initialMessage, setInitialMessage] = useState<string | null>(null);
   const [selectedProblemId, setSelectedProblemId] = useState<string | null>(null);
 
-  // 메시지에서 힌트를 reactive하게 계산 (서버 저장은 별도로 처리)
-  const computedHints = useMemo(() => extractAllHints(
-    messages.map((m) => ({
-      role: m.role,
-      parts: m.parts?.map((p) => ({
-        type: p.type,
-        text: "text" in p ? (p as { text?: string }).text : undefined,
-      })),
-    }))
-  ), [messages]);
+  // DB 기반 hints state
+  const [hints, setHints] = useState<Hint[] | null>(null);
+  const prevStatusRef = useRef<string>(status);
+  const problemChangedRef = useRef(false);
 
   // 문제 선택 핸들러
   const handleProblemSelect = async (problemId: string) => {
@@ -148,6 +142,7 @@ const ChatBotDemo = ({ chatId, onChatIdChange, initialProblemId }: ChatBotDemoPr
 
       // 상태 업데이트 (문제 전환 시 이전 힌트 초기화)
       setSelectedProblemId(problemId);
+      setHints(null);
       setProblemUrl(data.problemUrl);
       setChatTitle(data.title);
       setContextProblemUrl(data.problemUrl);
@@ -257,6 +252,7 @@ const ChatBotDemo = ({ chatId, onChatIdChange, initialProblemId }: ChatBotDemoPr
           // problemUrl, title 저장
           setProblemUrl(chatData.problemUrl || null);
           setChatTitle(chatData.title || null);
+          setHints(chatData.hints ?? null);
           setSelectedProblemId(null); // 새 채팅 로드 시 선택 초기화
         } else {
           console.log("[useEffect chatId] No messages in DB, keeping current messages");
@@ -269,6 +265,7 @@ const ChatBotDemo = ({ chatId, onChatIdChange, initialProblemId }: ChatBotDemoPr
       setMessages([]);
       setProblemUrl(null);
       setChatTitle(null);
+      setHints(null);
       setSelectedProblemId(null);
     }
 
@@ -277,54 +274,89 @@ const ChatBotDemo = ({ chatId, onChatIdChange, initialProblemId }: ChatBotDemoPr
   }, [chatId, setMessages]);
 
   // 메시지에서 linkProblemToChat tool output 감지 (실시간)
-  // 스트리밍 중에도 도구 결과는 즉시 감지해야 함
+  // AI tool이 이미 DB를 업데이트했으므로 클라이언트 상태만 동기화
+  // 역순 스캔: 가장 마지막(최신) 문제 연결 결과를 사용
   useEffect(() => {
     if (messages.length === 0) return;
 
-    // 스트리밍 중이어도 도구 결과는 처리해야 하므로 모든 메시지 확인
-    for (const message of messages) {
+    for (let i = messages.length - 1; i >= 0; i--) {
+      const message = messages[i];
       if (message.role !== "assistant") continue;
 
       for (const part of message.parts) {
-        // tool-result에서 linkProblemToChat 결과 확인
-        if (part.type === "tool-result") {
+        if (part.type === "tool-linkProblemToChat") {
           const toolPart = part as {
             type: string;
-            toolName?: string;
+            state?: string;
             output?: { success?: boolean; problemId?: string; problemUrl?: string; title?: string };
           };
-          if (toolPart.toolName === "linkProblemToChat" && toolPart.output?.success && toolPart.output?.problemId) {
-            // 기존 handleProblemSelect 로직 재사용 (UI 버튼과 동일)
-            const problemId = toolPart.output.problemId;
-            if (problemId !== selectedProblemId) {
-              console.log("AI linked problem:", problemId);
-              handleProblemSelect(problemId);
+          if (toolPart.state === "output-available" && toolPart.output?.success) {
+            const toolProblemUrl = toolPart.output.problemUrl;
+            if (toolProblemUrl && toolProblemUrl !== problemUrl) {
+              setProblemUrl(toolProblemUrl);
+              setChatTitle(toolPart.output.title || null);
+              setContextProblemUrl(toolProblemUrl);
+              setHints(null);
+              problemChangedRef.current = true;
             }
             return;
           }
         }
       }
     }
-  }, [messages, problemUrl, setRefreshTrigger, setContextProblemUrl]);
+  }, [messages, problemUrl, setContextProblemUrl]);
 
   // 서버에서 새 chatId가 metadata로 전달되면 감지
   useEffect(() => {
-    console.log("[useEffect metadata] Check:", { chatId, messagesLength: messages.length });
     if (chatId || messages.length === 0) return;
 
-    // assistant 메시지의 metadata에서 newChatId 확인
     for (const msg of messages) {
-      if (msg.role === "assistant" && msg.metadata) {
-        const metadata = msg.metadata as { newChatId?: string };
-        if (metadata.newChatId) {
-          console.log("Received new chatId from server:", metadata.newChatId, "messages.length:", messages.length);
-          onChatIdChange?.(metadata.newChatId);
-          setRefreshTrigger((prev) => prev + 1);
-          return;
-        }
+      if (msg.role !== "assistant" || !msg.metadata) continue;
+      const metadata = msg.metadata as { newChatId?: string };
+
+      if (metadata.newChatId) {
+        console.log("Received new chatId from server:", metadata.newChatId);
+        onChatIdChange?.(metadata.newChatId);
+        setRefreshTrigger((prev) => prev + 1);
+        return;
       }
     }
-  }, [messages, chatId, onChatIdChange, setRefreshTrigger]);
+  }, [messages, chatId, problemUrl, onChatIdChange, setRefreshTrigger, setContextProblemUrl]);
+
+  // 스트림 완료 후 마지막 메시지에서 힌트 파싱하여 append
+  useEffect(() => {
+    const prevStatus = prevStatusRef.current;
+    prevStatusRef.current = status;
+
+    if (prevStatus !== "ready" && status === "ready") {
+      // 문제 변경 직후면 스킵 (hints는 이미 null로 설정됨)
+      if (problemChangedRef.current) {
+        problemChangedRef.current = false;
+        return;
+      }
+
+      // 마지막 assistant 메시지에서 새 힌트 추출
+      const lastAssistantMsg = [...messages].reverse().find((m) => m.role === "assistant");
+      if (!lastAssistantMsg) return;
+
+      const textParts = lastAssistantMsg.parts
+        .filter((p) => p.type === "text" && "text" in p)
+        .map((p) => (p as { text: string }).text)
+        .join("");
+
+      const { hintContents } = parseHintsFromMessage(textParts);
+      if (hintContents && hintContents.length > 0) {
+        setHints((prev) => {
+          const existingCount = prev?.length ?? 0;
+          const newHints: Hint[] = hintContents.map((content, i) => ({
+            step: existingCount + i + 1,
+            content,
+          }));
+          return [...(prev ?? []), ...newHints];
+        });
+      }
+    }
+  }, [status, messages]);
 
   const handleSubmit = async (message: PromptInputMessage) => {
     const hasText = Boolean(message.text);
@@ -383,9 +415,9 @@ const ChatBotDemo = ({ chatId, onChatIdChange, initialProblemId }: ChatBotDemoPr
         <>
           <div className="flex-1 min-h-0 flex flex-col relative z-10">
             {/* 힌트 패널 - hints가 있고 문제 전환 직후가 아닐 때만 표시 */}
-            {computedHints && computedHints.length > 0 && selectedProblemId === null && (
+            {hints && hints.length > 0 && selectedProblemId === null && (
               <div className="flex-shrink-0 px-4 py-3 border-b bg-muted/20 flex items-start justify-between gap-4">
-                <HintsCard key={problemUrl ?? chatId} hints={computedHints} />
+                <HintsCard key={problemUrl ?? chatId} hints={hints} />
                 <Button
                   variant="ghost"
                   size="icon-sm"

@@ -579,6 +579,32 @@ export async function getChatHistory(
   }
 }
 
+export async function getChatHints(chatId: string): Promise<Hint[] | null> {
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getClaims();
+  const claims = data?.claims;
+  if (!claims) return null;
+  const userId = claims.sub as string;
+
+  try {
+    const { data, error } = await supabase
+      .from("chat_history")
+      .select("hints")
+      .eq("id", chatId)
+      .eq("user_id", userId)
+      .single();
+
+    if (error) {
+      console.error("Failed to get chat hints:", error);
+      return null;
+    }
+    return data.hints ?? null;
+  } catch (error) {
+    console.error("Failed to get chat hints:", error);
+    return null;
+  }
+}
+
 export async function deleteChatHistory(chatId: string): Promise<boolean> {
   const supabase = await createClient();
   const { data } = await supabase.auth.getClaims();

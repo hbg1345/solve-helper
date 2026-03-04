@@ -1,6 +1,7 @@
 "use client";
 
 import { ExternalLink, RefreshCw, Languages } from "lucide-react";
+import { Loader } from "@/components/ai-elements/loader";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -357,10 +358,7 @@ export const ProblemPanel = memo(function ProblemPanel({ problemUrl }: ProblemPa
       <div className="flex-1 overflow-auto">
         {isLoading ? (
           <div className="flex items-center justify-center h-full min-h-[200px]">
-            <div className="flex items-center gap-2 text-foreground">
-              <RefreshCw className="h-5 w-5 animate-spin" />
-              <span>로딩 중...</span>
-            </div>
+            <Loader size={24} />
           </div>
         ) : isTranslating ? (
           <div className="flex items-center justify-center h-full min-h-[200px]">

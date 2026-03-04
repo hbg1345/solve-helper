@@ -111,16 +111,19 @@ export async function saveChatAfterStream(
   // 메시지 직렬화
   const serializedMessages = messages.map(serializeMessage);
 
-  // 힌트 추출
-  const hints = extractAllHints(
-    messages.map((m) => ({
-      role: m.role,
-      parts: m.parts?.map((p) => ({
-        type: p.type,
-        text: "text" in p ? (p as { text?: string }).text : undefined,
-      })),
-    }))
-  );
+  // 마지막 assistant 메시지에서만 새 힌트 추출 (이전 힌트는 DB에 이미 저장됨)
+  const lastAssistantMsg = [...messages].reverse().find((m) => m.role === "assistant");
+  const newHints = lastAssistantMsg
+    ? extractAllHints([
+        {
+          role: lastAssistantMsg.role,
+          parts: lastAssistantMsg.parts?.map((p) => ({
+            type: p.type,
+            text: "text" in p ? (p as { text?: string }).text : undefined,
+          })),
+        },
+      ])
+    : null;
 
   // 제목 결정: problemUrl이 있으면 기존 제목 유지
   const shouldUpdateTitle = !hasProblemUrl;
@@ -137,8 +140,17 @@ export async function saveChatAfterStream(
     updateData.title = title;
   }
 
-  if (hints) {
-    updateData.hints = hints;
+  // 새 힌트가 있으면 기존 DB 힌트에 append
+  if (newHints && newHints.length > 0) {
+    const { data: existingData } = await supabase
+      .from("chat_history")
+      .select("hints")
+      .eq("id", chatId)
+      .eq("user_id", userId)
+      .single();
+
+    const existingHints: Hint[] = existingData?.hints ?? [];
+    updateData.hints = [...existingHints, ...newHints];
   }
 
   const { error } = await supabase

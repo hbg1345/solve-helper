@@ -1,6 +1,7 @@
 import { AppLayout } from "@/components/app-layout";
 import { ChatLayoutWrapper } from "./ChatLayoutWrapper";
 import { Suspense } from "react";
+import { Loader } from "@/components/ai-elements/loader";
 import { ChatAuthCheck } from "./ChatAuthCheck";
 
 export default function ChatLayout({
@@ -17,7 +18,7 @@ export default function ChatLayout({
       <Suspense
         fallback={
           <div className="w-full h-full flex items-center justify-center">
-            로딩 중...
+            <Loader />
           </div>
         }
       >

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { Loader } from "@/components/ai-elements/loader";
 import { Button } from "@/components/ui/button";
 import { PanelLeftClose, PanelLeftOpen, Plus, MessageSquare, Trash2, PanelLeft, PanelRight, Columns2 } from "lucide-react";
 import { getChatHistoryList, deleteChatHistory, saveChatHistory, type ChatHistoryItem } from "@/app/actions";
@@ -129,8 +130,8 @@ export function ChatSidebar({
             {isOpen && (
                 <div className="flex-1 overflow-y-auto p-2">
                     {isLoading ? (
-                        <div className="text-sm text-foreground text-center py-4">
-                            로딩 중...
+                        <div className="flex justify-center py-4">
+                            <Loader />
                         </div>
                     ) : chatList.length === 0 ? (
                         <div className="text-sm text-foreground text-center py-4">

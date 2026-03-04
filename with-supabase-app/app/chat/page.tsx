@@ -2,6 +2,7 @@
 
 import { Suspense, useCallback, useEffect, useState } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { Loader } from "@/components/ai-elements/loader";
 import ChatComponent from "./ChatComponent";
 import { useChatLayout } from "./ChatLayoutContext";
 
@@ -59,7 +60,7 @@ export default function Page() {
       <Suspense
         fallback={
           <div className="flex-1 flex items-center justify-center">
-            로딩 중...
+            <Loader />
           </div>
         }
       >

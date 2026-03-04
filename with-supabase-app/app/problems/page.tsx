@@ -3,6 +3,7 @@ import {
   extractProblemIndex,
   ContestFilter,
 } from "@/lib/atcoder/problems";
+import { Loader } from "@/components/ai-elements/loader";
 import { getSolvedProblems } from "@/app/actions";
 import Link from "next/link";
 import { ProblemLink } from "@/components/problem-link";
@@ -533,7 +534,7 @@ function ProblemsLoading() {
       {/* Header */}
       <div className="flex flex-col gap-2 w-full">
         <h1 className="text-3xl font-bold tracking-tight">Problems Archive</h1>
-        <p className="text-foreground">로딩 중...</p>
+        <Loader />
       </div>
 
       {/* Loading Table */}
