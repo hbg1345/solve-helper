@@ -71,7 +71,7 @@ export function CTASection({ isLoggedIn }: CTASectionProps) {
               whileTap={{ scale: 0.95 }}
             >
               <Button asChild size="lg" variant="secondary" className="text-lg px-8 py-6">
-                <Link href="/auth/sign-up">
+                <Link href="/auth/login">
                   무료로 시작하기
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Link>

@@ -17,12 +17,6 @@ export async function AuthButton() {
         >
           LOG IN
         </Link>
-        <Link
-          href="/auth/sign-up"
-          className="font-game text-xs font-medium px-3 py-2 bg-pixel-navy text-pixel-yellow hover:bg-pixel-blue transition-colors tracking-wide"
-        >
-          SIGN UP
-        </Link>
       </div>
     );
   }
