@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { AnimeModeProvider } from "@/components/anime-mode-context";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import "katex/dist/katex.min.css";
 import "./globals.css";
 
@@ -37,6 +38,7 @@ export default function RootLayout({
         >
           <AnimeModeProvider>
             {children}
+            <SpeedInsights />
           </AnimeModeProvider>
         </ThemeProvider>
       </body>
