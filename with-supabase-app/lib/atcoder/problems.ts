@@ -1,5 +1,6 @@
 import * as cheerio from "cheerio";
 import { createClient } from "@/lib/supabase/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
  * AtCoder Problems API에서 문제 난이도 정보를 가져옵니다.
@@ -786,7 +787,7 @@ export async function saveProblemToDB(problem: Problem): Promise<boolean> {
  * 이 함수는 Kenkoo의 problems.json과 problem-models.json을 사용하여
  * 빠르게 초기 테이블을 채웁니다.
  */
-export async function collectAllProblemsFromKenkoo(): Promise<{
+export async function collectAllProblemsFromKenkoo(supabaseClient?: SupabaseClient): Promise<{
   processed: number;
   saved: number;
 }> {
@@ -840,7 +841,6 @@ export async function collectAllProblemsFromKenkoo(): Promise<{
           id: kenkooProblem.id,
           title: kenkooProblem.name || kenkooProblem.title || kenkooProblem.id,
           difficulty,
-          summary: null, // 나중에 추가
           updated_at: new Date().toISOString(),
         });
       } catch (error) {
@@ -856,7 +856,7 @@ export async function collectAllProblemsFromKenkoo(): Promise<{
 
     // 4. 한 번에 DB에 저장
     try {
-      const supabase = await createClient();
+      const supabase = supabaseClient ?? await createClient();
       const { error } = await supabase.from("problems").upsert(problemsToSave, {
         onConflict: "id",
       });
@@ -890,7 +890,7 @@ export async function collectAllProblemsFromKenkoo(): Promise<{
 /**
  * Kenkoo contest.json을 사용하여 contests 테이블을 채웁니다.
  */
-export async function populateContestsFromKenkooAPI(): Promise<{
+export async function populateContestsFromKenkooAPI(supabaseClient?: SupabaseClient): Promise<{
   processed: number;
   saved: number;
 }> {
@@ -921,7 +921,7 @@ export async function populateContestsFromKenkooAPI(): Promise<{
 
     // 배치로 DB에 저장 (1000개씩)
     const BATCH_SIZE = 1000;
-    const supabase = await createClient();
+    const supabase = supabaseClient ?? await createClient();
     for (let i = 0; i < recordsToInsert.length; i += BATCH_SIZE) {
       const batch = recordsToInsert.slice(i, i + BATCH_SIZE);
 
@@ -961,7 +961,7 @@ export async function populateContestsFromKenkooAPI(): Promise<{
 /**
  * Kenkoo contest-problem.json을 사용하여 contest_problems 테이블을 채웁니다.
  */
-export async function populateContestProblemsFromKenkooAPI(): Promise<{
+export async function populateContestProblemsFromKenkooAPI(supabaseClient?: SupabaseClient): Promise<{
   processed: number;
   saved: number;
 }> {
@@ -986,7 +986,7 @@ export async function populateContestProblemsFromKenkooAPI(): Promise<{
     );
 
     // DB에 존재하는 문제 ID 목록 가져오기 (Foreign Key 제약 조건을 만족시키기 위해)
-    const supabase = await createClient();
+    const supabase = supabaseClient ?? await createClient();
     const existingProblemIds = new Set<string>();
     let from = 0;
     const pageSize = 1000;
