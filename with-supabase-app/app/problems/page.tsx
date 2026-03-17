@@ -171,8 +171,8 @@ async function ProblemsContent({
   let filteredContests = problemsByContest;
   if (hideCompleted && solvedProblemIds.size > 0) {
     filteredContests = filteredContests.filter(([, problems]) => {
-      // 콘테스트의 문제 중 하나라도 풀지 않은 문제가 있으면 포함
-      return problems.some((problem) => !solvedProblemIds.has(problem.id));
+      // 푼 문제가 하나도 없는 콘테스트만 포함 (하나라도 풀었으면 제외)
+      return problems.every((problem) => !solvedProblemIds.has(problem.id));
     });
   }
 
