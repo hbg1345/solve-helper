@@ -1202,9 +1202,7 @@ export async function getPracticeStats(): Promise<PracticeStats> {
 
   try {
     const { data, error } = await supabase
-      .from("practice_sessions")
-      .select("elapsed_time, hints_used, solved")
-      .eq("user_id", userId);
+      .rpc("get_practice_stats", { p_user_id: userId });
 
     if (error || !data || data.length === 0) {
       return {
@@ -1215,16 +1213,12 @@ export async function getPracticeStats(): Promise<PracticeStats> {
       };
     }
 
-    const totalSessions = data.length;
-    const solvedCount = data.filter((s) => s.solved).length;
-    const avgElapsedTime = data.reduce((acc, s) => acc + s.elapsed_time, 0) / totalSessions;
-    const avgHintsUsed = data.reduce((acc, s) => acc + s.hints_used, 0) / totalSessions;
-
+    const row = data[0];
     return {
-      totalSessions,
-      solvedCount,
-      avgElapsedTime,
-      avgHintsUsed,
+      totalSessions: Number(row.total_sessions),
+      solvedCount: Number(row.solved_count),
+      avgElapsedTime: Number(row.avg_elapsed_time),
+      avgHintsUsed: Number(row.avg_hints_used),
     };
   } catch (error) {
     console.error("Failed to get practice stats:", error);
