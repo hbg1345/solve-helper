@@ -26,6 +26,7 @@
     "@radix-ui/react-use-controllable-state": "^1.2.2",
     "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
+    "@vercel/speed-insights": "^2.0.0",
     "@xyflow/react": "^12.10.0",
     "ai": "^6.0.3",
     "class-variance-authority": "^0.7.1",
