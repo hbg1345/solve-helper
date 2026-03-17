@@ -4,6 +4,11 @@ import { ThemeProvider } from "next-themes";
 import { AnimeModeProvider } from "@/components/anime-mode-context";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
+import { CollapsibleHeader } from "@/components/collapsible-header";
+import { AuthButton } from "@/components/auth-button";
+import { EnvVarWarning } from "@/components/env-var-warning";
+import { hasEnvVars } from "@/lib/utils";
+import { Suspense } from "react";
 import "katex/dist/katex.min.css";
 import "./globals.css";
 
@@ -28,6 +33,21 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const authButton = !hasEnvVars ? (
+    <EnvVarWarning />
+  ) : (
+    <Suspense fallback={<div className="w-16 h-9" />}>
+      <AuthButton />
+    </Suspense>
+  );
+  const mobileAuthButton = !hasEnvVars ? (
+    <EnvVarWarning />
+  ) : (
+    <Suspense fallback={<div className="w-full h-8" />}>
+      <AuthButton />
+    </Suspense>
+  );
+
   return (
     <html lang="ko" suppressHydrationWarning>
       <body className={`${geistSans.className} antialiased`}>
@@ -38,6 +58,7 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <AnimeModeProvider>
+            <CollapsibleHeader authButton={authButton} mobileAuthButton={mobileAuthButton} />
             {children}
             <SpeedInsights />
             <Analytics />
