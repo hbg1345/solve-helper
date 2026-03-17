@@ -84,7 +84,7 @@ export function ProfileForm({ rating, atcoder_handle }: UserInfoRow) {
 }
 
 interface ProfileWithGrassProps extends UserInfoRow {
-  solvedProblems?: SolvedProblem[];
+  atcoder_handle_for_solved?: string | null;
   practiceSessions?: PracticeSession[];
   practiceStats?: PracticeStats;
 }
@@ -93,7 +93,7 @@ export function ProfileWithGrass({
   rating: initialRating,
   atcoder_handle,
   avatar_url: initialAvatarUrl,
-  solvedProblems: initialSolvedProblems = [],
+  atcoder_handle_for_solved,
   practiceSessions = [],
   practiceStats = { totalSessions: 0, solvedCount: 0, avgElapsedTime: 0, avgHintsUsed: 0 },
 }: ProfileWithGrassProps) {
@@ -102,14 +102,23 @@ export function ProfileWithGrass({
   const [isUpdating, setIsUpdating] = useState(false);
   const [rating, setRating] = useState(initialRating);
   const [avatarUrl, setAvatarUrl] = useState(initialAvatarUrl);
-  const [solvedProblems, setSolvedProblems] = useState(initialSolvedProblems);
+  const [solvedProblems, setSolvedProblems] = useState<SolvedProblem[]>([]);
+  const [solvedLoading, setSolvedLoading] = useState(!!atcoder_handle_for_solved);
   const [isPending, startTransition] = useTransition();
   const [refreshKey, setRefreshKey] = useState(0);
   const router = useRouter();
 
   // router.refresh() 후 서버에서 새 props가 내려올 때 state 동기화
   useEffect(() => { setRating(initialRating); }, [initialRating]);
-  useEffect(() => { setSolvedProblems(initialSolvedProblems); }, [initialSolvedProblems]);
+
+  // 마운트 후 solved problems 클라이언트 로드
+  useEffect(() => {
+    if (!atcoder_handle_for_solved) return;
+    getSolvedProblems(atcoder_handle_for_solved).then((problems) => {
+      setSolvedProblems(problems);
+      setSolvedLoading(false);
+    });
+  }, [atcoder_handle_for_solved]);
 
   const handleRefresh = () => {
     if (!atcoder_handle) return;
@@ -318,7 +327,13 @@ export function ProfileWithGrass({
         </Card>
       )}
 
-      {solvedProblems.length > 0 && (
+      {solvedLoading ? (
+        <Card className="w-full">
+          <CardContent className="pt-6">
+            <div className="h-24 bg-muted animate-pulse rounded" />
+          </CardContent>
+        </Card>
+      ) : solvedProblems.length > 0 && (
         <>
           <DifficultyDistribution problems={solvedProblems} />
           <Card className="w-full">

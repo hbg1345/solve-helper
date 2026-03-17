@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Suspense } from "react";
 import { ProfileWithGrass } from "@/components/profile-form";
 import { UserInfoRow } from "@/types/supabase";
-import { getSolvedProblems, getPracticeSessions, getPracticeStats } from "@/app/actions";
+import { getPracticeSessions, getPracticeStats } from "@/app/actions";
 import { OngoingPracticeIndicator } from "@/components/ongoing-practice-indicator";
 
 async function UserDetails() {
@@ -36,12 +36,6 @@ async function UserDetails() {
     avatar_url: data.avatar_url ?? null,
   };
 
-  // 푼 문제 목록 가져오기
-  const solvedProblems = userData.atcoder_handle
-    ? await getSolvedProblems(userData.atcoder_handle)
-    : [];
-
-  // 연습 세션 기록 가져오기
   const [practiceSessions, practiceStats] = await Promise.all([
     getPracticeSessions(20),
     getPracticeStats(),
@@ -52,7 +46,7 @@ async function UserDetails() {
       rating={userData.rating}
       atcoder_handle={userData.atcoder_handle}
       avatar_url={userData.avatar_url}
-      solvedProblems={solvedProblems}
+      atcoder_handle_for_solved={userData.atcoder_handle}
       practiceSessions={practiceSessions}
       practiceStats={practiceStats}
     />
