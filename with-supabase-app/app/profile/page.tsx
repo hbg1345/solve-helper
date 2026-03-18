@@ -37,26 +37,31 @@ async function UserDetails() {
     avatar_url: data.avatar_url ?? null,
   };
 
-  const [practiceSessions, practiceStats] = await Promise.all([
+  const [tr, practiceSessions, practiceStats] = await Promise.all([
+    getServerTr(),
     getPracticeSessions(20),
     getPracticeStats(),
   ]);
 
   return (
-    <ProfileWithGrass
-      rating={userData.rating}
-      atcoder_handle={userData.atcoder_handle}
-      avatar_url={userData.avatar_url}
-      atcoder_handle_for_solved={userData.atcoder_handle}
-      practiceSessions={practiceSessions}
-      practiceStats={practiceStats}
-    />
+    <>
+      <div className="flex flex-col gap-2">
+        <h1 className="text-3xl font-bold tracking-tight">Profile</h1>
+        <p className="text-foreground">{tr.profile.subtitle}</p>
+      </div>
+      <ProfileWithGrass
+        rating={userData.rating}
+        atcoder_handle={userData.atcoder_handle}
+        avatar_url={userData.avatar_url}
+        atcoder_handle_for_solved={userData.atcoder_handle}
+        practiceSessions={practiceSessions}
+        practiceStats={practiceStats}
+      />
+    </>
   );
 }
 
-export default async function ProfilePage() {
-  const tr = await getServerTr();
-
+export default function ProfilePage() {
   return (
     <div className="w-full">
       <div className="max-w-5xl mx-auto">
@@ -65,9 +70,6 @@ export default async function ProfilePage() {
             <>
               <div className="flex flex-col gap-2">
                 <h1 className="text-3xl font-bold tracking-tight">Profile</h1>
-                <p className="text-foreground">
-                  {tr.profile.subtitle}
-                </p>
               </div>
               <div className="w-full max-w-md h-64 bg-muted animate-pulse rounded-xl" />
             </>
