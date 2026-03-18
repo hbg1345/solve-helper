@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -22,8 +22,6 @@ import {
   RefreshCw,
   AlertTriangle,
   MessageSquare,
-  Minus,
-  Plus,
   Eye,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
@@ -34,44 +32,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { saveChatHistory, getChatByProblemUrl } from "@/app/actions";
 
-// 최소 시간 (분 단위)
-const MIN_TIME = 1;
-
-/**
- * 사용자 레이팅과 문제 난이도 차이에 따라 추천 시간 계산
- * @param userRating 사용자 레이팅
- * @param problemDifficulty 문제 난이도
- * @returns 추천 시간 (분)
- */
-function calculateRecommendedTime(userRating: number, problemDifficulty: number): number {
-  const diff = problemDifficulty - userRating;
-
-  // 난이도 차이에 따른 시간 계산
-  // 기준: 레이팅 동일 = 30분
-  // 200점 차이마다 ±10분 조정
-  let baseTime = 30;
-
-  if (diff >= 400) {
-    // 매우 어려운 문제: 90분 ~ 120분
-    baseTime = 90 + Math.min(30, Math.floor((diff - 400) / 200) * 15);
-  } else if (diff >= 200) {
-    // 어려운 문제: 60분 ~ 90분
-    baseTime = 60 + Math.floor((diff - 200) / 100) * 15;
-  } else if (diff >= 0) {
-    // 적정 난이도: 30분 ~ 60분
-    baseTime = 30 + Math.floor(diff / 100) * 15;
-  } else if (diff >= -200) {
-    // 쉬운 문제: 20분 ~ 30분
-    baseTime = 30 + Math.floor(diff / 100) * 5;
-  } else {
-    // 매우 쉬운 문제: 15분 ~ 20분
-    baseTime = 15;
-  }
-
-  // 5분 단위로 반올림
-  const rounded = Math.round(baseTime / 5) * 5;
-  return Math.max(MIN_TIME, rounded);
-}
 
 type PracticeStatus = "setup" | "running" | "paused" | "completed";
 
@@ -118,8 +78,8 @@ export default function PracticeClient({ problemId }: PracticeClientProps) {
   const [difficulty, setDifficulty] = useState<number | null>(null);
   const [sessionSaved, setSessionSaved] = useState(false);
   const [otherOngoingSession, setOtherOngoingSession] = useState<OngoingSession | null>(null);
-  const [recommendedTime, setRecommendedTime] = useState<number | null>(null);
   const [selectedHintIndex, setSelectedHintIndex] = useState<number | null>(null);
+  const didAutoStart = useRef(false);
   const [initialized, setInitialized] = useState(false);
   const router = useRouter();
 
@@ -213,14 +173,13 @@ export default function PracticeClient({ problemId }: PracticeClientProps) {
     fetchProblemInfo();
   }, [problemId, status]);
 
-  // 추천 시간 계산 (사용자 레이팅 & 문제 난이도 기반)
+  // 자동 시작 (setup 화면 없이 바로 시작)
   useEffect(() => {
-    if (userRating !== null && difficulty !== null && status === "setup") {
-      const recommended = calculateRecommendedTime(userRating, difficulty);
-      setRecommendedTime(recommended);
-      setSelectedTime(recommended); // 자동 선택
-    }
-  }, [userRating, difficulty, status]);
+    if (!initialized || didAutoStart.current || otherOngoingSession || status !== "setup") return;
+    didAutoStart.current = true;
+    handleStart();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialized, otherOngoingSession, status]);
 
   // 세션 저장
   useEffect(() => {
@@ -359,10 +318,10 @@ export default function PracticeClient({ problemId }: PracticeClientProps) {
 
   // 다시 시작
   const handleRestart = () => {
+    didAutoStart.current = false;
     setStatus("setup");
     setRemainingTime(0);
     setElapsedTime(0);
-    // 힌트는 계속 해금 상태 유지
     setIsSolved(null);
     setSessionSaved(false);
   };
@@ -458,157 +417,45 @@ export default function PracticeClient({ problemId }: PracticeClientProps) {
       {/* 메인 콘텐츠 */}
       <div className="flex-1 overflow-auto">
         {status === "setup" ? (
-          /* 시간 설정 화면 */
-          <div className="max-w-2xl mx-auto p-8">
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Clock className="h-5 w-5" />
-                  시간 설정
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {/* 다른 문제 진행 중 경고 */}
-                {otherOngoingSession && (
-                  <div className="p-4 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
-                    <div className="flex items-start gap-3">
-                      <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
-                      <div className="flex-1">
-                        <p className="font-medium text-amber-800 dark:text-amber-200">
-                          다른 문제 연습이 진행 중입니다
-                        </p>
-                        <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
-                          {otherOngoingSession.problemTitle || otherOngoingSession.problemId}
-                        </p>
-                        <div className="flex gap-2 mt-3">
-                          <Button size="sm" variant="outline" asChild>
-                            <Link href={`/practice/${otherOngoingSession.problemId}`}>
-                              이어하기
-                            </Link>
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            onClick={handleAbandonOtherSession}
-                            className="text-amber-700 dark:text-amber-300"
-                          >
-                            포기하고 새로 시작
-                          </Button>
-                        </div>
+          /* 로딩 / 다른 세션 경고 */
+          <div className="flex items-center justify-center h-full p-8">
+            {otherOngoingSession ? (
+              <Card className="max-w-md w-full">
+                <CardContent className="pt-6">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
+                    <div className="flex-1">
+                      <p className="font-medium text-amber-800 dark:text-amber-200">
+                        다른 문제 연습이 진행 중입니다
+                      </p>
+                      <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
+                        {otherOngoingSession.problemTitle || otherOngoingSession.problemId}
+                      </p>
+                      <div className="flex gap-2 mt-3">
+                        <Button size="sm" variant="outline" asChild>
+                          <Link href={`/practice/${otherOngoingSession.problemId}`}>
+                            이어하기
+                          </Link>
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={handleAbandonOtherSession}
+                          className="text-amber-700 dark:text-amber-300"
+                        >
+                          포기하고 새로 시작
+                        </Button>
                       </div>
                     </div>
                   </div>
-                )}
-
-                {/* 레이팅 정보 표시 */}
-                {userRating !== null && difficulty !== null && (
-                  <div className="p-3 bg-muted/50 rounded-lg">
-                    <div className="flex items-center justify-between text-sm">
-                      <span className="text-foreground">내 레이팅</span>
-                      <span className="font-semibold">{userRating}</span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm mt-1">
-                      <span className="text-foreground">문제 난이도</span>
-                      <span className={cn(
-                        "font-semibold",
-                        difficulty > userRating + 200 ? "text-red-500" :
-                        difficulty > userRating ? "text-amber-500" :
-                        difficulty > userRating - 200 ? "text-green-500" :
-                        "text-blue-500"
-                      )}>
-                        {difficulty}
-                      </span>
-                    </div>
-                    <div className="flex items-center justify-between text-sm mt-1 pt-1 border-t">
-                      <span className="text-foreground">난이도 차이</span>
-                      <span className={cn(
-                        "font-semibold",
-                        difficulty - userRating > 200 ? "text-red-500" :
-                        difficulty - userRating > 0 ? "text-amber-500" :
-                        difficulty - userRating > -200 ? "text-green-500" :
-                        "text-blue-500"
-                      )}>
-                        {difficulty - userRating > 0 ? "+" : ""}{difficulty - userRating}
-                      </span>
-                    </div>
-                  </div>
-                )}
-
-                <p className="text-foreground">
-                  문제를 풀 시간을 설정하세요. 시간이 경과할수록 힌트가 하나씩
-                  해금됩니다.
-                </p>
-
-                {/* 시간 조절 UI */}
-                <div className="flex items-center justify-center gap-4">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-12 w-12"
-                    onClick={() => setSelectedTime(Math.max(MIN_TIME, selectedTime - 5))}
-                    disabled={selectedTime <= MIN_TIME}
-                  >
-                    <Minus className="h-5 w-5" />
-                  </Button>
-
-                  <div className="flex flex-col items-center">
-                    <div className="flex items-baseline gap-1">
-                      <input
-                        type="number"
-                        value={selectedTime}
-                        onChange={(e) => {
-                          const value = parseInt(e.target.value) || MIN_TIME;
-                          setSelectedTime(Math.max(MIN_TIME, value));
-                        }}
-                        className="w-20 text-4xl font-bold tabular-nums text-center bg-transparent border-b-2 border-transparent hover:border-muted focus:border-primary focus:outline-none"
-                        min={MIN_TIME}
-                      />
-                      <span className="text-2xl font-bold text-foreground">분</span>
-                    </div>
-                    {recommendedTime && (
-                      <span className="text-xs text-foreground mt-1">
-                        추천: {recommendedTime}분
-                      </span>
-                    )}
-                  </div>
-
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    className="h-12 w-12"
-                    onClick={() => setSelectedTime(selectedTime + 5)}
-                  >
-                    <Plus className="h-5 w-5" />
-                  </Button>
-                </div>
-
-                {/* 추천 시간으로 리셋 버튼 */}
-                {recommendedTime && selectedTime !== recommendedTime && (
-                  <div className="flex justify-center">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setSelectedTime(recommendedTime)}
-                      className="text-xs"
-                    >
-                      {recommendedTime}분으로 설정
-                    </Button>
-                  </div>
-                )}
-
-                <div className="pt-4 border-t">
-                  <Button
-                    size="lg"
-                    className="w-full"
-                    onClick={handleStart}
-                    disabled={!!otherOngoingSession}
-                  >
-                    <Play className="h-5 w-5 mr-2" />
-                    연습 시작
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            ) : (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <RefreshCw className="h-4 w-4 animate-spin" />
+                <span>불러오는 중...</span>
+              </div>
+            )}
           </div>
         ) : status === "completed" ? (
           /* 완료 화면 */
