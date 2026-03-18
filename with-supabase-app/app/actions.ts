@@ -1,8 +1,7 @@
 "use server";
 import { createClient } from "@/lib/supabase/server";
 import { fetchUserInfo } from "@qatadaazzeh/atcoder-api";
-import { getRecommendedProblems, RecommendedProblem } from "@/lib/atcoder/recommendations";
-export type { RecommendedProblem };
+import { getRecommendedProblems, type RecommendedProblem } from "@/lib/atcoder/recommendations";
 
 export type MessagePart = {
   type: string;

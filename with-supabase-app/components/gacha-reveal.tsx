@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { motion } from "motion/react";
 import { Button } from "@/components/ui/button";
 import { Sparkles, RefreshCw } from "lucide-react";
-import { RecommendedProblem } from "@/app/actions";
+import type { RecommendedProblem } from "@/lib/atcoder/recommendations";
 import { getGachaRecommendations } from "@/app/actions";
 import Link from "next/link";
 import { useLanguage } from "./language-context";
