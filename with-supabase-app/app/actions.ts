@@ -231,28 +231,27 @@ async function fetchAndEnrichProblems(atcoderHandle: string, userId: string | nu
 
   // userId가 있으면 DB에 저장
   if (userId) {
-    // 기존 데이터 삭제 후 새로 삽입
-    await supabase
-      .from("user_solved_problems")
-      .delete()
-      .eq("user_id", userId);
-
-    // 배치로 삽입
+    // 새로 추가되거나 변경된 것만 upsert (status WA→AC 업데이트 포함)
     const batchSize = 500;
+    const batches = [];
     for (let i = 0; i < apiProblems.length; i += batchSize) {
-      const batch = apiProblems.slice(i, i + batchSize).map((p) => ({
+      batches.push(apiProblems.slice(i, i + batchSize).map((p) => ({
         user_id: userId,
         problem_id: p.problem_id,
         contest_id: p.contest_id,
         solved_at: p.solved_at?.toISOString() || null,
         status: p.status,
-      }));
-
-      const { error } = await supabase.from("user_solved_problems").insert(batch);
-      if (error) {
-        console.error("[fetchAndEnrichProblems] Insert error at batch", i, error);
-      }
+        updated_at: new Date().toISOString(),
+      })));
     }
+    await Promise.all(batches.map((batch, i) =>
+      supabase
+        .from("user_solved_problems")
+        .upsert(batch, { onConflict: "user_id,problem_id" })
+        .then(({ error }) => {
+          if (error) console.error("[fetchAndEnrichProblems] Upsert error at batch", i, error);
+        })
+    ));
 
     // 동기화 시간 업데이트
     await supabase
@@ -1058,15 +1057,9 @@ export async function refreshRatingHistory(
       return { success: true, count: 0 };
     }
 
-    // 기존 데이터 삭제 후 새로 삽입 (upsert 대신 replace)
-    await supabase
-      .from("contest_history")
-      .delete()
-      .eq("atcoder_handle", username);
-
     const { error } = await supabase
       .from("contest_history")
-      .insert(entries);
+      .upsert(entries, { onConflict: "atcoder_handle,contest_screen_name" });
 
     if (error) {
       console.error("Failed to save rating history:", error);
