@@ -105,7 +105,19 @@ function getSolveProbability(userRating: number, difficulty: number | null): num
   return 1 / (1 + Math.pow(6, (difficulty - userRating) / 400));
 }
 
-async function PracticeContent() {
+async function PracticeContent({
+  searchParams,
+}: {
+  searchParams: Promise<{ fromYear?: string; fromMonth?: string }>;
+}) {
+  const params = await searchParams;
+  const fromYear = params.fromYear ? parseInt(params.fromYear) : null;
+  const fromMonth = params.fromMonth ? parseInt(params.fromMonth) : null;
+  const fromEpoch =
+    fromYear != null
+      ? Math.floor(new Date(fromYear, (fromMonth ?? 1) - 1, 1).getTime() / 1000)
+      : undefined;
+
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims;
@@ -161,7 +173,7 @@ async function PracticeContent() {
 
   // 추천 문제와 연습 기록을 병렬로 가져오기
   const [recommendedByRange, practiceSessions, practiceStats] = await Promise.all([
-    getRecommendedProblemsByRange(userData.rating, 5),
+    getRecommendedProblemsByRange(userData.rating, 5, fromEpoch),
     getPracticeSessions(50),
     getPracticeStats(),
   ]);
@@ -193,13 +205,56 @@ async function PracticeContent() {
       {/* 진행 중인 도전 세션 */}
       <OngoingSessionCard />
 
+      {/* 날짜 필터 */}
+      <Card className="w-full py-0">
+        <CardContent className="py-3">
+          <form action="/practice" method="GET" className="flex items-center gap-3 flex-wrap">
+            <span className="text-sm font-medium shrink-0">출제 기간:</span>
+            <div className="flex items-center gap-1.5">
+              <input
+                type="number"
+                name="fromYear"
+                placeholder="연도"
+                defaultValue={fromYear ?? ""}
+                min={2010}
+                max={new Date().getFullYear()}
+                className="w-20 h-8 rounded-md border border-input bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              />
+              <span className="text-sm">년</span>
+              <select
+                name="fromMonth"
+                defaultValue={fromMonth ?? ""}
+                className="h-8 rounded-md border border-input bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
+              >
+                <option value="">전체</option>
+                {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
+                  <option key={m} value={m}>{m}월</option>
+                ))}
+              </select>
+              <span className="text-sm">이후</span>
+            </div>
+            <Button type="submit" size="sm" variant="secondary">적용</Button>
+            {fromYear && (
+              <Button asChild size="sm" variant="outline">
+                <Link href="/practice">초기화</Link>
+              </Button>
+            )}
+            {fromYear && (
+              <span className="text-xs text-muted-foreground">
+                {fromYear}년 {fromMonth ?? 1}월 이후 출제된 문제
+              </span>
+            )}
+          </form>
+        </CardContent>
+      </Card>
+
       {/* Recommended Problems Grid */}
       <Card className="w-full">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <CardTitle>추천 문제 ({totalProblems}개)</CardTitle>
-              <span className="text-xs font-medium text-black dark:text-white">% = 예상 해결 확률</span>
+              <span className="text-xs font-medium text-black dark:text-white">%: 예상 해결 확률</span>
             </div>
             <Button asChild variant="ghost" size="icon" className="h-7 w-7">
               <Link href="/practice">
@@ -218,9 +273,6 @@ async function PracticeContent() {
                 <div key={rangeIndex} className="flex flex-col">
                   <div className="mb-3 pb-2 border-b">
                     <h3 className="text-sm font-semibold">{range.label}</h3>
-                    <p className="text-xs font-medium text-black dark:text-white mt-1">
-                      {problems.length}개 문제
-                    </p>
                   </div>
                   <div className="space-y-2 flex-1">
                     {problems.length === 0 ? (
@@ -317,12 +369,16 @@ function PracticeLoading() {
   );
 }
 
-export default function PracticePage() {
+export default function PracticePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ fromYear?: string; fromMonth?: string }>;
+}) {
   return (
     <div className="w-full">
       <div className="flex flex-col gap-8 items-start">
         <Suspense fallback={<PracticeLoading />}>
-          <PracticeContent />
+          <PracticeContent searchParams={searchParams} />
         </Suspense>
       </div>
     </div>

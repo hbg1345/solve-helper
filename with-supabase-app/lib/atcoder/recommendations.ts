@@ -51,7 +51,8 @@ async function getProblemsInRange(
   maxRating: number,
   count: number,
   isLastRange: boolean = false,
-  solvedProblemIds: Set<string> = new Set()
+  solvedProblemIds: Set<string> = new Set(),
+  fromEpoch?: number
 ): Promise<RecommendedProblem[]> {
   const supabase = await createClient();
 
@@ -75,7 +76,21 @@ async function getProblemsInRange(
   }
 
   // 이미 푼 문제 제외
-  const unsolvedProblems = problems.filter((p) => !solvedProblemIds.has(p.id));
+  let unsolvedProblems = problems.filter((p) => !solvedProblemIds.has(p.id));
+
+  // 날짜 필터: fromEpoch 이후 출제된 콘테스트 문제만
+  if (fromEpoch && unsolvedProblems.length > 0) {
+    const uniqueContestIds = [...new Set(unsolvedProblems.map((p) => p.id.split("_")[0]))];
+    const { data: validContests } = await supabase
+      .from("contests")
+      .select("id")
+      .in("id", uniqueContestIds)
+      .gte("start_epoch_second", fromEpoch);
+    if (validContests) {
+      const validSet = new Set(validContests.map((c) => c.id));
+      unsolvedProblems = unsolvedProblems.filter((p) => validSet.has(p.id.split("_")[0]));
+    }
+  }
 
   if (unsolvedProblems.length === 0) {
     return [];
@@ -161,6 +176,24 @@ async function getSolvedProblemIds(): Promise<Set<string>> {
 }
 
 /**
+ * 타로 카드용: 정확히 5개 문제를 랜덤 추출합니다.
+ */
+export async function getRecommendedProblems(
+  userRating: number,
+  fromEpoch?: number
+): Promise<RecommendedProblem[]> {
+  const solvedProblemIds = await getSolvedProblemIds();
+  return getProblemsInRange(
+    Math.max(0, userRating - 300),
+    userRating + 500,
+    5,
+    false,
+    solvedProblemIds,
+    fromEpoch
+  );
+}
+
+/**
  * 사용자 레이팅을 기반으로 문제를 추천합니다.
  * 레이팅 ±500 범위를 250 단위로 나눠서 4개의 열로 구성합니다.
  * 각 범위에서 약 7-8개씩 랜덤으로 선택합니다.
@@ -172,7 +205,8 @@ async function getSolvedProblemIds(): Promise<Set<string>> {
  */
 export async function getRecommendedProblemsByRange(
   userRating: number,
-  problemsPerRange: number = 8
+  problemsPerRange: number = 8,
+  fromEpoch?: number
 ): Promise<Map<string, { range: RatingRange; problems: RecommendedProblem[] }>> {
   const ranges = getRatingRanges(userRating);
   const result = new Map<string, { range: RatingRange; problems: RecommendedProblem[] }>();
@@ -188,7 +222,8 @@ export async function getRecommendedProblemsByRange(
       range.max,
       problemsPerRange,
       isLastRange,
-      solvedProblemIds
+      solvedProblemIds,
+      fromEpoch
     );
     return { range, problems };
   });

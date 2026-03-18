@@ -4,6 +4,14 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { saveChatHistory, getChatByProblemUrl } from "@/app/actions";
 import { cn } from "@/lib/utils";
+import { saveRecentProblem } from "@/lib/recent-problems";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { MessageSquare, Swords } from "lucide-react";
 
 interface ProblemLinkProps {
   problemId: string;
@@ -14,7 +22,7 @@ interface ProblemLinkProps {
   status?: 'AC' | 'WA' | null;
   className?: string;
   children?: React.ReactNode;
-  mode?: "chat" | "practice"; // 어디로 이동할지
+  mode?: "select" | "practice"; // select: 드롭다운으로 선택, practice: 바로 도전 이동
 }
 
 export function ProblemLink({
@@ -26,73 +34,83 @@ export function ProblemLink({
   status,
   className,
   children,
-  mode = "chat",
+  mode = "select",
 }: ProblemLinkProps) {
   const router = useRouter();
 
-  const handleClick = async (e: React.MouseEvent) => {
-    e.preventDefault();
+  const saveToRecent = () => {
+    saveRecentProblem({ problemId, problemTitle, problemUrl, contestId, difficulty });
+  };
 
-    if (mode === "practice") {
-      // 연습 모드로 이동
-      router.push(`/practice/${problemId}`);
-      return;
-    }
-
-    // 기존 채팅이 있는지 확인
+  const goToChat = async () => {
+    saveToRecent();
     let chatId = await getChatByProblemUrl(problemUrl);
-
     if (!chatId) {
-      // 기존 채팅이 없으면 새로 생성
       const title = `${problemId}: ${problemTitle}`;
       chatId = await saveChatHistory(null, [], title, problemUrl);
     }
+    router.push(chatId ? `/chat?chatId=${chatId}` : "/chat");
+  };
 
-    // 해당 채팅으로 이동
-    if (chatId) {
-      router.push(`/chat?chatId=${chatId}`);
-    } else {
-      router.push("/chat");
-    }
+  const goToPractice = () => {
+    saveToRecent();
+    router.push(`/practice/${problemId}`);
   };
 
   const colors = getDifficultyColor(difficulty);
 
-  return (
-    <Link href="/chat" onClick={handleClick} className={className}>
-      {children || (
-        <div
-          className={cn(
-            "text-xs font-bold truncate group-hover:underline",
-            difficulty && difficulty >= 3200 ? "" : colors.text
-          )}
-          title={problemTitle}
-        >
-          {status === 'AC' && (
-            <span className="text-green-500 mr-0.5">[AC]</span>
-          )}
-          {status === 'WA' && (
-            <span className="text-orange-500 mr-0.5">[WA]</span>
-          )}
-          {difficulty && difficulty >= 3200 ? (
-            problemTitle.length > 0 ? (
-              <>
-                <span className="text-black dark:text-white">
-                  {problemTitle[0]}
-                </span>
-                <span className="text-red-600 dark:text-red-400">
-                  {problemTitle.slice(1)}
-                </span>
-              </>
-            ) : (
-              problemTitle
-            )
-          ) : (
-            problemTitle
-          )}
-        </div>
+  const label = (
+    <div
+      className={cn(
+        "text-xs font-bold truncate group-hover:underline",
+        difficulty && difficulty >= 3200 ? "" : colors.text
       )}
-    </Link>
+      title={problemTitle}
+    >
+      {status === 'AC' && (
+        <span className="text-green-500 mr-0.5">[AC]</span>
+      )}
+      {status === 'WA' && (
+        <span className="text-orange-500 mr-0.5">[WA]</span>
+      )}
+      {difficulty && difficulty >= 3200 ? (
+        problemTitle.length > 0 ? (
+          <>
+            <span className="text-black dark:text-white">{problemTitle[0]}</span>
+            <span className="text-red-600 dark:text-red-400">{problemTitle.slice(1)}</span>
+          </>
+        ) : problemTitle
+      ) : problemTitle}
+    </div>
+  );
+
+  // practice 모드는 드롭다운 없이 바로 이동
+  if (mode === "practice") {
+    return (
+      <Link href={`/practice/${problemId}`} className={className}>
+        {children || label}
+      </Link>
+    );
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button className={cn("w-full text-left cursor-pointer", className)}>
+          {children || label}
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-36">
+        <DropdownMenuItem onClick={goToChat} className="gap-2 cursor-pointer">
+          <MessageSquare className="h-3.5 w-3.5" />
+          AI 채팅
+        </DropdownMenuItem>
+        <DropdownMenuItem onClick={goToPractice} className="gap-2 cursor-pointer">
+          <Swords className="h-3.5 w-3.5" />
+          도전
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 

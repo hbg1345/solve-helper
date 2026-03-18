@@ -8,6 +8,7 @@ import { Loader } from "@/components/ai-elements/loader";
 import { getSolvedProblems, getProblemStatuses } from "@/app/actions";
 import Link from "next/link";
 import { ProblemLink } from "@/components/problem-link";
+import { RecentProblems } from "@/components/recent-problems";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
@@ -220,10 +221,7 @@ async function ProblemsContent({
 
   // 페이지네이션 컴포넌트
   const Pagination = () => (
-    <div className="flex items-center justify-between flex-wrap gap-4">
-      <div className="text-sm text-foreground">
-        페이지 {currentPage} / {totalPages} (총 {totalContests}개 콘테스트)
-      </div>
+    <div className="flex items-center justify-end flex-wrap gap-1">
       <div className="flex items-center gap-1">
         {/* 더블 왼쪽 화살표: 10페이지 뒤로 */}
         {currentPage > 10 && (
@@ -289,25 +287,10 @@ async function ProblemsContent({
 
   return (
     <>
-      {/* Header */}
-      <div className="flex flex-col gap-2 w-full">
-        <h1 className="text-3xl font-bold tracking-tight">Problems Archive</h1>
-        <p className="text-foreground">
-          Data provided by{" "}
-          <Link
-            href="https://kenkoooo.com/atcoder/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-primary hover:underline"
-          >
-            Kenkoo API
-          </Link>
-        </p>
-      </div>
 
       {/* Filter & Pagination */}
-      <Card className="w-full">
-        <CardContent className="pt-6 space-y-4">
+      <Card className="w-full py-0">
+        <CardContent className="py-3 space-y-2">
           {/* Filter & Search */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             {/* Filter Buttons - Left */}
@@ -392,7 +375,7 @@ async function ProblemsContent({
       {/* Problems Table */}
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>Contests & Problems</CardTitle>
+          <RecentProblems />
         </CardHeader>
         <CardContent>
           <ScrollArea className="w-full">
@@ -536,11 +519,24 @@ async function ProblemsContent({
       </Card>
 
       {/* Bottom Pagination */}
-      <Card className="w-full">
-        <CardContent className="pt-6">
+      <Card className="w-full py-0">
+        <CardContent className="py-3">
           <Pagination />
         </CardContent>
       </Card>
+
+      {/* Data Source */}
+      <p className="text-sm text-foreground/50 w-full text-center pb-2">
+        Data provided by{" "}
+        <Link
+          href="https://kenkoooo.com/atcoder/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:underline"
+        >
+          Kenkoo API
+        </Link>
+      </p>
     </>
   );
 }
@@ -557,7 +553,6 @@ function ProblemsLoading() {
       {/* Loading Table */}
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>Contests & Problems</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="w-full h-[600px] bg-muted/30 animate-pulse rounded-lg" />

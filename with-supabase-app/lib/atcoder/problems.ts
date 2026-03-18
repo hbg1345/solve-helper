@@ -233,6 +233,11 @@ export async function getProblemsGroupedByContest(
   const filterPattern = getFilterPattern(filter);
   const searchLower = search.toLowerCase();
 
+  // abc/arc/agc 외 콘테스트 제외 헬퍼
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const applyBaseFilter = (q: any) =>
+    filterPattern ? q : q.or("id.ilike.abc%,id.ilike.arc%,id.ilike.agc%");
+
   // 검색어가 있으면 문제 제목으로도 검색하여 해당 콘테스트 ID 수집
   let contestIdsFromTitleSearch: Set<string> | null = null;
   if (search) {
@@ -275,12 +280,11 @@ export async function getProblemsGroupedByContest(
     // 중복 제거
     const uniqueContestIds = [...new Set(allMatchingContestIds)];
 
-    // 필터 적용
-    let filteredIds = uniqueContestIds;
-    if (filterPattern) {
-      const filterPrefix = filter; // abc, arc, agc
-      filteredIds = uniqueContestIds.filter((id) => id.startsWith(filterPrefix));
-    }
+    // 필터 적용 (항상 abc/arc/agc만 허용)
+    const allowedPrefixes = filterPattern ? [filter] : ["abc", "arc", "agc"];
+    let filteredIds = uniqueContestIds.filter((id) =>
+      allowedPrefixes.some((prefix) => id.startsWith(prefix))
+    );
 
     // 풀었던 콘테스트 제외
     if (excludeContestIds && excludeContestIds.size > 0) {
@@ -326,6 +330,7 @@ export async function getProblemsGroupedByContest(
     .from("contests")
     .select("*", { count: "exact", head: true });
 
+  countQuery = applyBaseFilter(countQuery);
   if (filterPattern) {
     countQuery = countQuery.ilike("id", filterPattern);
   }
@@ -371,6 +376,7 @@ export async function getProblemsGroupedByContest(
     .select("id")
     .order("start_epoch_second", { ascending: false });
 
+  contestsQuery = applyBaseFilter(contestsQuery);
   if (filterPattern) {
     contestsQuery = contestsQuery.ilike("id", filterPattern);
   }
@@ -525,9 +531,11 @@ async function getProblemsGroupedByContestFallback(
       .order("id")
       .range(from, from + pageSize - 1);
 
-    // 필터 적용
+    // 필터 적용 (항상 abc/arc/agc만 허용)
     if (filterPrefix) {
       query = query.ilike("id", `${filterPrefix}%`);
+    } else {
+      query = query.or("id.ilike.abc%,id.ilike.arc%,id.ilike.agc%");
     }
 
     const { data, error } = await query;
