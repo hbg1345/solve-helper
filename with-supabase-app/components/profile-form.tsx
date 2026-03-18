@@ -25,6 +25,7 @@ import { RefreshCw, Pencil, Check, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { updatAtcoderHandle } from "@/app/actions";
 import { useRouter } from "next/navigation";
+import { useLanguage } from "./language-context";
 
 export function ProfileForm({ rating, atcoder_handle }: UserInfoRow) {
     const [modify, setModify] = useState(false);
@@ -97,6 +98,7 @@ export function ProfileWithGrass({
   practiceSessions = [],
   practiceStats = { totalSessions: 0, solvedCount: 0, avgElapsedTime: 0, avgHintsUsed: 0 },
 }: ProfileWithGrassProps) {
+  const { tr } = useLanguage();
   const [modify, setModify] = useState(false);
   const [editHandle, setEditHandle] = useState(atcoder_handle || "");
   const [isUpdating, setIsUpdating] = useState(false);
@@ -185,7 +187,7 @@ export function ProfileWithGrass({
         <div className="flex flex-col gap-2 self-start w-full">
           <h1 className="text-3xl font-bold tracking-tight">Profile</h1>
           <p className="text-foreground">
-            프로필 정보를 확인하고 관리하세요
+            {tr.profile.subtitle}
           </p>
         </div>
         <Card className="w-full max-w-md">
