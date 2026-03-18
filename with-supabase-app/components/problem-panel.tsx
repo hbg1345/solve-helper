@@ -43,7 +43,12 @@ const languageLabels: Record<Language, string> = {
 
 export const ProblemPanel = memo(function ProblemPanel({ problemUrl }: ProblemPanelProps) {
   const layoutContext = useChatLayoutOptional();
-  const [localLanguage, setLocalLanguage] = useState<ProblemLanguage>("en");
+  const [localLanguage, setLocalLanguage] = useState<ProblemLanguage>(() => {
+    if (typeof window === "undefined") return "en";
+    const stored = localStorage.getItem("appLanguage");
+    if (stored === "ko" || stored === "en" || stored === "ja") return stored;
+    return "en";
+  });
   const language = layoutContext?.problemLanguage ?? localLanguage;
   const setLanguage = layoutContext?.setProblemLanguage ?? setLocalLanguage;
   const [isLoading, setIsLoading] = useState(false);

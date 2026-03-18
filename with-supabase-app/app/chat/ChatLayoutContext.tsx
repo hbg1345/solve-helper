@@ -5,6 +5,13 @@ import { createContext, useContext, useState, ReactNode } from "react";
 export type LayoutMode = "both" | "problem-only" | "chat-only";
 export type ProblemLanguage = "en" | "ja" | "ko";
 
+function getInitialProblemLanguage(): ProblemLanguage {
+  if (typeof window === "undefined") return "en";
+  const stored = localStorage.getItem("appLanguage");
+  if (stored === "ko" || stored === "en" || stored === "ja") return stored;
+  return "en";
+}
+
 interface ChatLayoutContextType {
   selectedChatId: string | null;
   setSelectedChatId: (chatId: string | null) => void;
@@ -30,7 +37,7 @@ export function ChatLayoutProvider({ children }: { children: ReactNode }) {
   const [problemUrl, setProblemUrl] = useState<string | null>(null);
   const [layoutMode, setLayoutMode] = useState<LayoutMode>("both");
   const [sidebarOpen, setSidebarOpen] = useState(true);
-  const [problemLanguage, setProblemLanguage] = useState<ProblemLanguage>("en");
+  const [problemLanguage, setProblemLanguage] = useState<ProblemLanguage>(getInitialProblemLanguage);
 
   return (
     <ChatLayoutContext.Provider
