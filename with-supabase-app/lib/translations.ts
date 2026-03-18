@@ -117,6 +117,10 @@ export const translations = {
     profile: {
       subtitle: "프로필 정보를 확인하고 관리하세요",
     },
+    gacha: {
+      pull: "뽑기!",
+      rePull: "다시 뽑기",
+    },
   },
   en: {
     nav: {
@@ -234,6 +238,10 @@ export const translations = {
     profile: {
       subtitle: "View and manage your profile",
     },
+    gacha: {
+      pull: "Draw!",
+      rePull: "Re-draw",
+    },
   },
   ja: {
     nav: {
@@ -350,6 +358,10 @@ export const translations = {
     },
     profile: {
       subtitle: "プロフィール情報を確認・管理する",
+    },
+    gacha: {
+      pull: "引く！",
+      rePull: "もう一度引く",
     },
   },
 };

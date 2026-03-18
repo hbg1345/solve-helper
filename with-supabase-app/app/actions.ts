@@ -1,6 +1,8 @@
 "use server";
 import { createClient } from "@/lib/supabase/server";
 import { fetchUserInfo } from "@qatadaazzeh/atcoder-api";
+import { getRecommendedProblems, RecommendedProblem } from "@/lib/atcoder/recommendations";
+export type { RecommendedProblem };
 
 export type MessagePart = {
   type: string;
@@ -1332,4 +1334,11 @@ export async function getPracticeStats(): Promise<PracticeStats> {
       avgHintsUsed: 0,
     };
   }
+}
+
+export async function getGachaRecommendations(
+  userRating: number,
+  fromEpoch?: number
+): Promise<RecommendedProblem[]> {
+  return getRecommendedProblems(userRating, fromEpoch);
 }
