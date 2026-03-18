@@ -258,7 +258,8 @@ export async function POST(req: Request) {
     problemUrl,
     chatId,
     isAnimeMode = false,
-  }: { message: UIMessage; problemUrl?: string; chatId?: string; isAnimeMode?: boolean } =
+    language = "ko",
+  }: { message: UIMessage; problemUrl?: string; chatId?: string; isAnimeMode?: boolean; language?: string } =
     await req.json();
 
   // 서버에서 이전 메시지 로드 + 새 메시지 합치기
@@ -494,7 +495,7 @@ ${problemTitle ? `현재 문제: "${problemTitle}"
 - 힌트 번호는 시스템이 자동 부여 (번호 포함하지 마세요)
 - 예시: {"type": "hint", "content": "상태를 어떻게 정의할지 생각해보세요."}
 
-사용자 언어로 답변하세요.
+${language === "en" ? "Always respond in English." : language === "ja" ? "必ず日本語で回答してください。" : "반드시 한국어로 답변하세요."}
 
 ===============================================================
 다시 한번 강조: JSON 형식 + $ 수학 표기 + 길이 제한 필수!

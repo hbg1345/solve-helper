@@ -2,10 +2,12 @@
 
 import { Button } from "@/components/ui/button";
 import { useAnimeMode } from "./anime-mode-context";
+import { useLanguage } from "./language-context";
 import { Sparkles, User } from "lucide-react";
 
 export function AnimeModeToggle() {
   const { isAnimeMode, setIsAnimeMode } = useAnimeMode();
+  const { tr } = useLanguage();
 
   const handleToggle = () => {
     setIsAnimeMode(!isAnimeMode);
@@ -14,18 +16,18 @@ export function AnimeModeToggle() {
   return (
     <Button
       variant="ghost"
-      size="icon"
+      size="sm"
       onClick={handleToggle}
-      aria-label={isAnimeMode ? "일반인 모드로 전환" : "애니 모드로 전환"}
-      className={`relative ${isAnimeMode ? "text-pixel-cyan hover:text-pixel-yellow" : "text-pixel-yellow hover:text-pixel-cyan"}`}
+      aria-label={isAnimeMode ? tr.animeMode.toNormal : tr.animeMode.toAnime}
+      className={`gap-1.5 ${isAnimeMode ? "text-pixel-cyan hover:text-pixel-yellow" : "text-pixel-yellow hover:text-pixel-cyan"}`}
     >
       {isAnimeMode ? (
         <Sparkles className="h-[1.2rem] w-[1.2rem]" />
       ) : (
         <User className="h-[1.2rem] w-[1.2rem]" />
       )}
-      <span className="sr-only">
-        {isAnimeMode ? "일반인 모드로 전환" : "애니 모드로 전환"}
+      <span className="text-xs font-medium">
+        {isAnimeMode ? tr.animeMode.anime : tr.animeMode.normal}
       </span>
     </Button>
   );

@@ -13,12 +13,7 @@ import {
 } from "@/components/ui/sheet";
 import { Menu, MessageSquare, Archive, Sword } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const navItems = [
-  { href: "/practice", label: "도전", icon: Sword },
-  { href: "/problems", label: "아카이브", icon: Archive },
-  { href: "/chat", label: "채팅", icon: MessageSquare },
-];
+import { useLanguage } from "./language-context";
 
 interface MobileNavProps {
   children?: React.ReactNode; // AuthButton
@@ -27,6 +22,13 @@ interface MobileNavProps {
 export function MobileNav({ children }: MobileNavProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
+  const { tr } = useLanguage();
+
+  const navItems = [
+    { href: "/practice", label: tr.nav.challenge, icon: Sword },
+    { href: "/problems", label: tr.nav.archive, icon: Archive },
+    { href: "/chat", label: tr.nav.chat, icon: MessageSquare },
+  ];
 
   return (
     <Sheet open={open} onOpenChange={setOpen}>
@@ -37,7 +39,7 @@ export function MobileNav({ children }: MobileNavProps) {
           className="h-9 w-9 text-pixel-white/80 hover:text-pixel-cyan hover:bg-pixel-navy"
         >
           <Menu className="h-5 w-5" />
-          <span className="sr-only">메뉴 열기</span>
+          <span className="sr-only">{tr.nav.menuOpen}</span>
         </Button>
       </SheetTrigger>
       <SheetContent

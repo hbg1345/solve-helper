@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { AnimeModeProvider } from "@/components/anime-mode-context";
+import { LanguageProvider } from "@/components/language-context";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Analytics } from "@vercel/analytics/next";
 import { CollapsibleHeader } from "@/components/collapsible-header";
@@ -57,12 +58,14 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <AnimeModeProvider>
-            <CollapsibleHeader authButton={authButton} mobileAuthButton={mobileAuthButton} />
-            {children}
-            <SpeedInsights />
-            <Analytics />
-          </AnimeModeProvider>
+          <LanguageProvider>
+            <AnimeModeProvider>
+              <CollapsibleHeader authButton={authButton} mobileAuthButton={mobileAuthButton} />
+              {children}
+              <SpeedInsights />
+              <Analytics />
+            </AnimeModeProvider>
+          </LanguageProvider>
         </ThemeProvider>
       </body>
     </html>

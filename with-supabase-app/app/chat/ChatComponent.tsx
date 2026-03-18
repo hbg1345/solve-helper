@@ -1,6 +1,7 @@
 "use client";
 import { Button } from "@/components/ui/button";
 import { useAnimeMode } from "@/components/anime-mode-context";
+import { useLanguage } from "@/components/language-context";
 import {
   Conversation,
   ConversationContent,
@@ -63,6 +64,7 @@ const transport = new DefaultChatTransport({
       chatId: body?.chatId,
       problemUrl: body?.problemUrl,
       isAnimeMode: body?.isAnimeMode,
+      language: body?.language,
     };
     return { body: requestBody };
   },
@@ -70,6 +72,7 @@ const transport = new DefaultChatTransport({
 
 const ChatBotDemo = ({ chatId, onChatIdChange, initialProblemId }: ChatBotDemoProps) => {
   const { isAnimeMode } = useAnimeMode();
+  const { lang, tr } = useLanguage();
   const prevChatIdRef = useRef<string | null>(null);
   const hasLoadedRef = useRef(false);
 
@@ -361,6 +364,7 @@ const ChatBotDemo = ({ chatId, onChatIdChange, initialProblemId }: ChatBotDemoPr
           chatId: chatId || undefined,
           problemUrl: problemUrl || undefined,
           isAnimeMode,
+          language: lang,
         },
       }
     );
@@ -407,7 +411,7 @@ const ChatBotDemo = ({ chatId, onChatIdChange, initialProblemId }: ChatBotDemoPr
                   variant="ghost"
                   size="icon-sm"
                   onClick={() => setBackgroundEnabled(!backgroundEnabled)}
-                  aria-label={backgroundEnabled ? "배경 끄기" : "배경 켜기"}
+                  aria-label={backgroundEnabled ? tr.chat.bgOff : tr.chat.bgOn}
                   className={backgroundEnabled ? "" : "opacity-40"}
                 >
                   <VideoIcon className="size-4" />
@@ -472,7 +476,7 @@ const ChatBotDemo = ({ chatId, onChatIdChange, initialProblemId }: ChatBotDemoPr
                               {/* 힌트는 content만 텍스트로 표시 (번호는 HintsCard에서 표시) */}
                               {parsedHints && parsedHints.map((content, idx) => (
                                 <MessageResponse key={idx}>
-                                  {`**힌트**: ${content}`}
+                                  {tr.chat.hintLabel(content)}
                                 </MessageResponse>
                               ))}
                               {/* 나머지 텍스트 표시 */}
@@ -525,7 +529,7 @@ const ChatBotDemo = ({ chatId, onChatIdChange, initialProblemId }: ChatBotDemoPr
               })}
               {status !== "ready" && (
                 <div className="flex items-center gap-1 py-4 text-foreground">
-                  <span className="text-sm">생각 중</span>
+                  <span className="text-sm">{tr.chat.thinking}</span>
                   <span className="flex gap-0.5">
                     <span className="w-1.5 h-1.5 bg-current rounded-full animate-pulse" />
                     <span className="w-1.5 h-1.5 bg-current rounded-full animate-pulse [animation-delay:0.2s]" />
@@ -543,7 +547,7 @@ const ChatBotDemo = ({ chatId, onChatIdChange, initialProblemId }: ChatBotDemoPr
         {tokenLimitExceeded && (
           <div className="mb-3 p-3 bg-destructive/10 border border-destructive/20 rounded-lg flex items-center gap-2 text-destructive text-sm">
             <AlertCircleIcon className="size-4 flex-shrink-0" />
-            <span>월간 토큰 사용량을 초과했습니다. 다음 달에 다시 시도해주세요.</span>
+            <span>{tr.chat.tokenExceeded}</span>
           </div>
         )}
         <PromptInput onSubmit={handleSubmit}>
@@ -552,7 +556,7 @@ const ChatBotDemo = ({ chatId, onChatIdChange, initialProblemId }: ChatBotDemoPr
               onChange={(e) => setInput(e.target.value)}
               value={input}
               disabled={tokenLimitExceeded}
-              placeholder={tokenLimitExceeded ? "토큰 제한 초과" : undefined}
+              placeholder={tokenLimitExceeded ? tr.chat.tokenLimitPlaceholder : undefined}
             />
           </PromptInputBody>
           <PromptInputFooter>

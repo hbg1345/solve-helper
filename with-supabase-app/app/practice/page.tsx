@@ -2,6 +2,7 @@ import {
   getRecommendedProblemsByRange,
   getRatingRanges,
 } from "@/lib/atcoder/recommendations";
+import { getServerTr } from "@/lib/lang-server";
 import { ProblemLink } from "@/components/problem-link";
 import { Loader } from "@/components/ai-elements/loader";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -111,6 +112,7 @@ async function PracticeContent({
   searchParams: Promise<{ fromYear?: string; fromMonth?: string }>;
 }) {
   const params = await searchParams;
+  const tr = await getServerTr();
   const fromYear = params.fromYear ? parseInt(params.fromYear) : null;
   const fromMonth = params.fromMonth ? parseInt(params.fromMonth) : null;
   const fromEpoch =
@@ -137,15 +139,15 @@ async function PracticeContent({
     return (
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>문제 추천</CardTitle>
+          <CardTitle>{tr.practice.title}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-foreground">
-            AtCoder 핸들을 연동해주세요.{" "}
+            {tr.practice.noHandle}{" "}
             <Link href="/profile" className="text-primary hover:underline">
-              프로필 페이지
+              {tr.practice.profilePage}
             </Link>
-            에서 연동할 수 있습니다.
+            {tr.practice.linkHere}
           </p>
         </CardContent>
       </Card>
@@ -156,15 +158,15 @@ async function PracticeContent({
     return (
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>문제 추천</CardTitle>
+          <CardTitle>{tr.practice.title}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-foreground">
-            레이팅 정보가 없습니다. AtCoder 핸들을 연동해주세요.{" "}
+            {tr.practice.noRating}{" "}
             <Link href="/profile" className="text-primary hover:underline">
-              프로필 페이지
+              {tr.practice.profilePage}
             </Link>
-            에서 연동할 수 있습니다.
+            {tr.practice.linkHere}
           </p>
         </CardContent>
       </Card>
@@ -189,11 +191,11 @@ async function PracticeContent({
     return (
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>문제 추천</CardTitle>
+          <CardTitle>{tr.practice.title}</CardTitle>
         </CardHeader>
         <CardContent>
           <p className="text-foreground">
-            현재 레이팅 ({userData.rating}) ±500 범위에 해당하는 문제를 찾을 수 없습니다.
+            {tr.practice.noProblems(userData.rating)}
           </p>
         </CardContent>
       </Card>
@@ -209,39 +211,39 @@ async function PracticeContent({
       <Card className="w-full py-0">
         <CardContent className="py-3">
           <form action="/practice" method="GET" className="flex items-center gap-3 flex-wrap">
-            <span className="text-sm font-medium shrink-0">출제 기간:</span>
+            <span className="text-sm font-medium shrink-0">{tr.practice.period}</span>
             <div className="flex items-center gap-1.5">
               <input
                 type="number"
                 name="fromYear"
-                placeholder="연도"
+                placeholder={tr.practice.yearPlaceholder}
                 defaultValue={fromYear ?? ""}
                 min={2010}
                 max={new Date().getFullYear()}
                 className="w-20 h-8 rounded-md border border-input bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
               />
-              <span className="text-sm">년</span>
+              {tr.practice.yearSuffix && <span className="text-sm">{tr.practice.yearSuffix}</span>}
               <select
                 name="fromMonth"
                 defaultValue={fromMonth ?? ""}
                 className="h-8 rounded-md border border-input bg-background px-2 text-sm focus:outline-none focus:ring-1 focus:ring-ring"
               >
-                <option value="">전체</option>
+                <option value="">{tr.practice.allMonths}</option>
                 {Array.from({ length: 12 }, (_, i) => i + 1).map((m) => (
-                  <option key={m} value={m}>{m}월</option>
+                  <option key={m} value={m}>{m}{tr.practice.month}</option>
                 ))}
               </select>
-              <span className="text-sm">이후</span>
+              <span className="text-sm">{tr.practice.after}</span>
             </div>
-            <Button type="submit" size="sm" variant="secondary">적용</Button>
+            <Button type="submit" size="sm" variant="secondary">{tr.practice.apply}</Button>
             {fromYear && (
               <Button asChild size="sm" variant="outline">
-                <Link href="/practice">초기화</Link>
+                <Link href="/practice">{tr.practice.reset}</Link>
               </Button>
             )}
             {fromYear && (
               <span className="text-xs text-muted-foreground">
-                {fromYear}년 {fromMonth ?? 1}월 이후 출제된 문제
+                {tr.practice.afterPeriod(fromYear, fromMonth ?? 1)}
               </span>
             )}
           </form>
@@ -253,8 +255,8 @@ async function PracticeContent({
         <CardHeader>
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <CardTitle>추천 문제 ({totalProblems}개)</CardTitle>
-              <span className="text-xs font-medium text-black dark:text-white">%: 예상 해결 확률</span>
+              <CardTitle>{tr.practice.recommended(totalProblems)}</CardTitle>
+              <span className="text-xs font-medium text-black dark:text-white">{tr.practice.solveProb}</span>
             </div>
             <Button asChild variant="ghost" size="icon" className="h-7 w-7">
               <Link href="/practice">
@@ -277,7 +279,7 @@ async function PracticeContent({
                   <div className="space-y-2 flex-1">
                     {problems.length === 0 ? (
                       <p className="text-sm text-black dark:text-white">
-                        이 범위에 문제가 없습니다.
+                        {tr.practice.noProblemsInRange}
                       </p>
                     ) : (
                       problems.map((problem) => {

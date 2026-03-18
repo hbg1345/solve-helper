@@ -4,6 +4,7 @@ import {
   extractProblemIndex,
   ContestFilter,
 } from "@/lib/atcoder/problems";
+import { getServerTr } from "@/lib/lang-server";
 import { Loader } from "@/components/ai-elements/loader";
 import { getSolvedProblems, getProblemStatuses } from "@/app/actions";
 import Link from "next/link";
@@ -153,6 +154,7 @@ async function ProblemsContent({
   const atcoderHandle = userData?.atcoder_handle || null;
 
   const params = await searchParams;
+  const tr = await getServerTr();
   const page = params.page ? parseInt(params.page, 10) : 1;
   const filter = (params.filter as ContestFilter) || "all";
   const search = params.search || "";
@@ -296,10 +298,10 @@ async function ProblemsContent({
             {/* Filter Buttons - Left */}
             <div className="flex items-center gap-2 flex-wrap">
               <span className="text-sm font-medium text-foreground mr-2">
-                필터:
+                {tr.problems.filter}
               </span>
               {[
-                { value: "all", label: "전체" },
+                { value: "all", label: tr.problems.all },
                 { value: "abc", label: "ABC" },
                 { value: "arc", label: "ARC" },
                 { value: "agc", label: "AGC" },
@@ -325,11 +327,11 @@ async function ProblemsContent({
                     checked={hideCompleted}
                     className="pointer-events-none"
                   />
-                  <span className="text-sm">푼 문제 포함 콘테스트 제외</span>
+                  <span className="text-sm">{tr.problems.excludeSolved}</span>
                 </Link>
               ) : (
                 <span className="text-xs text-foreground">
-                  (AtCoder 연동 시 풀이 필터 가능)
+                  {tr.problems.loginToFilter}
                 </span>
               )}
             </div>
@@ -340,7 +342,7 @@ async function ProblemsContent({
                 <Input
                   type="text"
                   name="search"
-                  placeholder="콘테스트 또는 문제 검색"
+                  placeholder={tr.problems.searchPlaceholder}
                   defaultValue={search}
                   className="pl-9"
                 />
@@ -364,7 +366,7 @@ async function ProblemsContent({
           {/* Search Result Info */}
           {search && (
             <div className="text-sm text-foreground">
-              &quot;{search}&quot; 검색 결과: {totalContests}개 콘테스트
+              {tr.problems.searchResult(search, totalContests)}
             </div>
           )}
           {/* Pagination */}

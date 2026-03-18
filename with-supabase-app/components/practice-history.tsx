@@ -6,7 +6,6 @@ import {
   XCircle,
   Clock,
   Lightbulb,
-
   TrendingUp,
   Circle,
 } from "lucide-react";
@@ -14,15 +13,14 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import type { PracticeSession, PracticeStats } from "@/app/actions";
+import { useLanguage } from "./language-context";
+import type { Lang, Translations } from "@/lib/translations";
 
 interface PracticeHistoryProps {
   sessions: PracticeSession[];
   stats: PracticeStats;
 }
 
-/**
- * AtCoder 레이팅 색상 (난이도에 따라)
- */
 function getDifficultyColor(difficulty: number | null): string {
   if (difficulty === null) return "text-gray-500 dark:text-gray-400";
   if (difficulty < 400) return "text-gray-500 dark:text-gray-400";
@@ -35,18 +33,6 @@ function getDifficultyColor(difficulty: number | null): string {
   return "text-red-600 dark:text-red-400";
 }
 
-function getDifficultyBgColor(difficulty: number | null): string {
-  if (difficulty === null) return "bg-gray-400";
-  if (difficulty < 400) return "bg-gray-400";
-  if (difficulty < 800) return "bg-amber-800";
-  if (difficulty < 1200) return "bg-green-600";
-  if (difficulty < 1600) return "bg-cyan-500";
-  if (difficulty < 2000) return "bg-blue-700";
-  if (difficulty < 2400) return "bg-yellow-400";
-  if (difficulty < 2800) return "bg-orange-500";
-  return "bg-red-600";
-}
-
 function formatTime(seconds: number): string {
   const h = Math.floor(seconds / 3600);
   const m = Math.floor((seconds % 3600) / 60);
@@ -57,41 +43,24 @@ function formatTime(seconds: number): string {
   return `${m}:${s.toString().padStart(2, "0")}`;
 }
 
-function formatTimeKorean(seconds: number): string {
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  if (h > 0) {
-    return `${h}시간 ${m}분`;
-  }
-  if (m > 0) {
-    return `${m}분`;
-  }
-  return `${seconds}초`;
-}
-
-function formatDate(dateString: string): string {
+function formatDate(dateString: string, lang: Lang, tr: Translations): string {
   const date = new Date(dateString);
   const now = new Date();
   const diffMs = now.getTime() - date.getTime();
   const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
 
-  if (diffDays === 0) {
-    return "오늘";
-  } else if (diffDays === 1) {
-    return "어제";
-  } else if (diffDays < 7) {
-    return `${diffDays}일 전`;
-  } else {
-    return date.toLocaleDateString("ko-KR", {
-      month: "short",
-      day: "numeric",
-    });
-  }
+  if (diffDays === 0) return tr.practiceHistory.today;
+  if (diffDays === 1) return tr.practiceHistory.yesterday;
+  if (diffDays < 7) return tr.practiceHistory.daysAgo(diffDays);
+
+  const locale = lang === "ko" ? "ko-KR" : lang === "ja" ? "ja-JP" : "en-US";
+  return date.toLocaleDateString(locale, { month: "short", day: "numeric" });
 }
 
-function formatFullDate(dateString: string): string {
+function formatFullDate(dateString: string, lang: Lang): string {
   const date = new Date(dateString);
-  return date.toLocaleString("ko-KR", {
+  const locale = lang === "ko" ? "ko-KR" : lang === "ja" ? "ja-JP" : "en-US";
+  return date.toLocaleString(locale, {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -101,17 +70,18 @@ function formatFullDate(dateString: string): string {
 }
 
 export function PracticeHistory({ sessions, stats }: PracticeHistoryProps) {
+  const { lang, tr } = useLanguage();
 
   if (sessions.length === 0) {
     return (
       <Card className="w-full">
         <CardHeader>
-          <CardTitle>도전 기록</CardTitle>
-          <CardDescription>아직 도전 기록이 없습니다</CardDescription>
+          <CardTitle>{tr.practiceHistory.title}</CardTitle>
+          <CardDescription>{tr.practiceHistory.empty}</CardDescription>
         </CardHeader>
         <CardContent>
           <p className="text-foreground text-center py-8">
-            위에서 추천 문제를 선택해서 도전을 시작해보세요!
+            {tr.practiceHistory.emptyHint}
           </p>
         </CardContent>
       </Card>
@@ -125,9 +95,9 @@ export function PracticeHistory({ sessions, stats }: PracticeHistoryProps) {
   return (
     <Card className="w-full">
       <CardHeader>
-        <CardTitle>도전 기록</CardTitle>
+        <CardTitle>{tr.practiceHistory.title}</CardTitle>
         <CardDescription>
-          총 {stats.totalSessions}회 도전 · {stats.solvedCount}개 해결 ({successRate}%)
+          {tr.practiceHistory.stats(stats.totalSessions, stats.solvedCount, String(successRate))}
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
@@ -135,7 +105,7 @@ export function PracticeHistory({ sessions, stats }: PracticeHistoryProps) {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           <div className="p-4 bg-muted/50 rounded-lg text-center">
             <p className="text-2xl font-bold">{stats.totalSessions}</p>
-            <p className="text-xs text-foreground">총 세션</p>
+            <p className="text-xs text-foreground">{tr.practiceHistory.totalSessions}</p>
           </div>
           <div className="p-4 bg-muted/50 rounded-lg text-center">
             <div className="flex items-center justify-center gap-1">
@@ -151,25 +121,25 @@ export function PracticeHistory({ sessions, stats }: PracticeHistoryProps) {
               </p>
             </div>
             <p className="text-xs text-foreground">
-              성공률 ({stats.solvedCount}/{stats.totalSessions})
+              {tr.practiceHistory.successRate(stats.solvedCount, stats.totalSessions)}
             </p>
           </div>
           <div className="p-4 bg-muted/50 rounded-lg text-center">
             <p className="text-2xl font-bold font-mono">
-              {formatTimeKorean(Math.round(stats.avgElapsedTime))}
+              {tr.practiceHistory.formatElapsedTime(Math.round(stats.avgElapsedTime))}
             </p>
-            <p className="text-xs text-foreground">평균 소요 시간</p>
+            <p className="text-xs text-foreground">{tr.practiceHistory.avgTime}</p>
           </div>
           <div className="p-4 bg-muted/50 rounded-lg text-center">
             <div className="flex items-center justify-center gap-1">
               <Lightbulb className="h-5 w-5 text-amber-500" />
               <p className="text-2xl font-bold">{stats.avgHintsUsed.toFixed(1)}</p>
             </div>
-            <p className="text-xs text-foreground">평균 힌트 사용</p>
+            <p className="text-xs text-foreground">{tr.practiceHistory.avgHints}</p>
           </div>
         </div>
 
-        {/* 세션 목록 - 그리드 (한 행에 4개, 내부 스크롤) */}
+        {/* 세션 목록 */}
         <div className="max-h-[500px] overflow-y-auto">
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 pr-1">
             {sessions.map((session) => (
@@ -183,7 +153,6 @@ export function PracticeHistory({ sessions, stats }: PracticeHistoryProps) {
                     : "bg-red-50/50 dark:bg-red-950/20 border-red-200 dark:border-red-800 hover:border-red-400"
                 )}
               >
-                {/* 상단: 결과 아이콘 + 제목 + 난이도 */}
                 <div className="flex items-center gap-2 mb-2">
                   {session.solved ? (
                     <CheckCircle className="h-4 w-4 text-green-600 dark:text-green-400 flex-shrink-0" />
@@ -209,18 +178,14 @@ export function PracticeHistory({ sessions, stats }: PracticeHistoryProps) {
                   )}
                 </div>
 
-                {/* 하단: 시간 + 힌트 + 날짜 */}
                 <div className="flex items-center justify-between text-xs text-foreground">
                   <div className="flex items-center gap-3">
-                    {/* 시간 정보 */}
                     <div className="flex items-center gap-1">
                       <Clock className="h-3 w-3" />
                       <span className="font-mono">
                         {formatTime(session.elapsed_time)}
                       </span>
                     </div>
-
-                    {/* 힌트 사용 - 동그라미 5개 */}
                     <div className="flex items-center gap-0.5">
                       <Lightbulb className="h-3 w-3 text-amber-500" />
                       {[0, 1, 2, 3, 4].map((i) => (
@@ -236,10 +201,8 @@ export function PracticeHistory({ sessions, stats }: PracticeHistoryProps) {
                       ))}
                     </div>
                   </div>
-
-                  {/* 날짜 */}
-                  <span title={formatFullDate(session.created_at)}>
-                    {formatDate(session.created_at)}
+                  <span title={formatFullDate(session.created_at, lang)}>
+                    {formatDate(session.created_at, lang, tr)}
                   </span>
                 </div>
               </Link>
@@ -247,10 +210,9 @@ export function PracticeHistory({ sessions, stats }: PracticeHistoryProps) {
           </div>
         </div>
 
-        {/* 스크롤 안내 (12개 이상일 때만) */}
         {sessions.length > 12 && (
           <p className="text-xs text-center text-foreground">
-            ↕ 스크롤하여 더 보기 ({sessions.length}개 기록)
+            {tr.practiceHistory.scrollMore(sessions.length)}
           </p>
         )}
       </CardContent>

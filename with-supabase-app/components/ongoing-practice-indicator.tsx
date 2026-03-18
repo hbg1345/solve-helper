@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Clock, Play, X, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { useLanguage } from "./language-context";
 
 interface OngoingPracticeState {
   problemId: string;
@@ -22,6 +23,7 @@ export function OngoingPracticeIndicator() {
   const [practiceState, setPracticeState] = useState<OngoingPracticeState | null>(null);
   const [currentRemainingTime, setCurrentRemainingTime] = useState<number>(0);
   const [dismissed, setDismissed] = useState(false);
+  const { tr } = useLanguage();
 
   // localStorage에서 상태 읽기
   useEffect(() => {
@@ -126,7 +128,7 @@ export function OngoingPracticeIndicator() {
             </p>
             <div className="flex items-center gap-2 text-xs text-foreground">
               <span>
-                {practiceState.status === "running" ? "진행 중" : "일시정지"}
+                {practiceState.status === "running" ? tr.ongoingPractice.running : tr.ongoingPractice.paused}
               </span>
               <span>·</span>
               <span
@@ -139,7 +141,7 @@ export function OngoingPracticeIndicator() {
                       : ""
                 )}
               >
-                {isExpired ? "시간 초과" : formatTime(currentRemainingTime)}
+                {isExpired ? tr.ongoingPractice.timeout : formatTime(currentRemainingTime)}
               </span>
             </div>
           </div>
@@ -150,7 +152,7 @@ export function OngoingPracticeIndicator() {
             size="icon"
             className="h-6 w-6 flex-shrink-0 text-red-500 hover:text-red-600"
             onClick={handleAbandon}
-            title="포기"
+            title={tr.ongoingPractice.giveUp}
           >
             <Trash2 className="h-3.5 w-3.5" />
           </Button>

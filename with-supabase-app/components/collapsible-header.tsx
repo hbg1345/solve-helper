@@ -6,6 +6,7 @@ import { DesktopNav } from "./desktop-nav";
 import { MobileNav } from "./mobile-nav";
 import { ThemeSwitcher } from "./theme-switcher";
 import { AnimeModeToggle } from "./anime-mode-toggle";
+import { LanguageSelector } from "./language-selector";
 
 interface CollapsibleHeaderProps {
   authButton: React.ReactNode;
@@ -31,6 +32,7 @@ export function CollapsibleHeader({ authButton, mobileAuthButton }: CollapsibleH
 
         {/* Desktop Auth & Theme */}
         <div className="hidden md:flex items-center gap-2">
+          <LanguageSelector />
           <AnimeModeToggle />
           <ThemeSwitcher />
           {authButton}
@@ -38,6 +40,7 @@ export function CollapsibleHeader({ authButton, mobileAuthButton }: CollapsibleH
 
         {/* Mobile Menu */}
         <div className="flex flex-1 items-center justify-end md:hidden gap-2">
+          <LanguageSelector />
           <AnimeModeToggle />
           <ThemeSwitcher />
           <Suspense fallback={<div className="h-9 w-9" />}>

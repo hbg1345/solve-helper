@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 
 import { createClient } from "@/lib/supabase/server";
+import { getServerTr } from "@/lib/lang-server";
 import { Suspense } from "react";
 import { ProfileWithGrass } from "@/components/profile-form";
 import { UserInfoRow } from "@/types/supabase";
@@ -53,7 +54,9 @@ async function UserDetails() {
   );
 }
 
-export default function ProfilePage() {
+export default async function ProfilePage() {
+  const tr = await getServerTr();
+
   return (
     <div className="w-full">
       <div className="max-w-5xl mx-auto">
@@ -63,7 +66,7 @@ export default function ProfilePage() {
               <div className="flex flex-col gap-2">
                 <h1 className="text-3xl font-bold tracking-tight">Profile</h1>
                 <p className="text-foreground">
-                  프로필 정보를 확인하고 관리하세요
+                  {tr.profile.subtitle}
                 </p>
               </div>
               <div className="w-full max-w-md h-64 bg-muted animate-pulse rounded-xl" />

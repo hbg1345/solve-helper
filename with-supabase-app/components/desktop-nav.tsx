@@ -4,15 +4,17 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { MessageSquare, Archive, Sword } from "lucide-react";
 import { cn } from "@/lib/utils";
-
-const navItems = [
-  { href: "/practice", label: "도전", icon: Sword },
-  { href: "/problems", label: "아카이브", icon: Archive },
-  { href: "/chat", label: "채팅", icon: MessageSquare },
-];
+import { useLanguage } from "./language-context";
 
 export function DesktopNav() {
   const pathname = usePathname();
+  const { tr } = useLanguage();
+
+  const navItems = [
+    { href: "/practice", label: tr.nav.challenge, icon: Sword },
+    { href: "/problems", label: tr.nav.archive, icon: Archive },
+    { href: "/chat", label: tr.nav.chat, icon: MessageSquare },
+  ];
 
   return (
     <nav className="hidden md:flex flex-1 items-center gap-1">

@@ -31,6 +31,7 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { saveChatHistory, getChatByProblemUrl } from "@/app/actions";
+import { useLanguage } from "@/components/language-context";
 
 
 type PracticeStatus = "setup" | "running" | "paused" | "completed";
@@ -86,6 +87,7 @@ export default function PracticeClient({ problemId }: PracticeClientProps) {
   // 문제 URL 생성 (contest_id는 DB에서 가져온 후 설정)
   const [contestId, setContestId] = useState<string | null>(null);
   const problemUrl = contestId ? `https://atcoder.jp/contests/${contestId}/tasks/${problemId}` : null;
+  const { tr } = useLanguage();
 
   // 세션 복원 + 다른 문제 세션 확인 (마운트 시 1회)
   useEffect(() => {
@@ -364,7 +366,7 @@ export default function PracticeClient({ problemId }: PracticeClientProps) {
             <Button variant="ghost" size="sm" asChild>
               <Link href="/practice">
                 <ArrowLeft className="h-4 w-4 mr-2" />
-                돌아가기
+                {tr.practiceClient.back}
               </Link>
             </Button>
             <h1 className="text-lg font-semibold">{problemId}</h1>
@@ -388,13 +390,13 @@ export default function PracticeClient({ problemId }: PracticeClientProps) {
               {status === "running" && (
                 <Button variant="outline" size="sm" onClick={handlePause}>
                   <Pause className="h-4 w-4 mr-2" />
-                  일시정지
+                  {tr.practiceClient.pause}
                 </Button>
               )}
               {status === "paused" && (
                 <Button variant="outline" size="sm" onClick={handleResume}>
                   <Play className="h-4 w-4 mr-2" />
-                  재개
+                  {tr.practiceClient.resume}
                 </Button>
               )}
             </div>
@@ -426,7 +428,7 @@ export default function PracticeClient({ problemId }: PracticeClientProps) {
                     <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" />
                     <div className="flex-1">
                       <p className="font-medium text-amber-800 dark:text-amber-200">
-                        다른 문제 연습이 진행 중입니다
+                        {tr.practiceClient.otherSession}
                       </p>
                       <p className="text-sm text-amber-700 dark:text-amber-300 mt-1">
                         {otherOngoingSession.problemTitle || otherOngoingSession.problemId}
@@ -434,7 +436,7 @@ export default function PracticeClient({ problemId }: PracticeClientProps) {
                       <div className="flex gap-2 mt-3">
                         <Button size="sm" variant="outline" asChild>
                           <Link href={`/practice/${otherOngoingSession.problemId}`}>
-                            이어하기
+                            {tr.practiceClient.continueSession}
                           </Link>
                         </Button>
                         <Button
@@ -443,7 +445,7 @@ export default function PracticeClient({ problemId }: PracticeClientProps) {
                           onClick={handleAbandonOtherSession}
                           className="text-amber-700 dark:text-amber-300"
                         >
-                          포기하고 새로 시작
+                          {tr.practiceClient.abandonSession}
                         </Button>
                       </div>
                     </div>
@@ -453,7 +455,7 @@ export default function PracticeClient({ problemId }: PracticeClientProps) {
             ) : (
               <div className="flex items-center gap-2 text-muted-foreground">
                 <RefreshCw className="h-4 w-4 animate-spin" />
-                <span>불러오는 중...</span>
+                <span>{tr.practiceClient.loading}</span>
               </div>
             )}
           </div>
@@ -466,12 +468,12 @@ export default function PracticeClient({ problemId }: PracticeClientProps) {
                   {isSolved ? (
                     <>
                       <CheckCircle className="h-6 w-6 text-green-500" />
-                      문제를 풀었습니다!
+                      {tr.practiceClient.solved}
                     </>
                   ) : (
                     <>
                       <XCircle className="h-6 w-6 text-red-500" />
-                      시간 초과 / 포기
+                      {tr.practiceClient.failed}
                     </>
                   )}
                 </CardTitle>
@@ -479,21 +481,21 @@ export default function PracticeClient({ problemId }: PracticeClientProps) {
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-2 gap-4">
                   <div className="p-4 bg-muted rounded-lg text-center">
-                    <p className="text-sm text-foreground">소요 시간</p>
+                    <p className="text-sm text-foreground">{tr.practiceClient.elapsed}</p>
                     <p className="text-2xl font-mono font-bold">
                       {formatTime(elapsedTime)}
                     </p>
                   </div>
                   <div className="p-4 bg-muted rounded-lg text-center">
-                    <p className="text-sm text-foreground">사용한 힌트</p>
-                    <p className="text-2xl font-bold">{unlockedHints}개</p>
+                    <p className="text-sm text-foreground">{tr.practiceClient.hintsUsed}</p>
+                    <p className="text-2xl font-bold">{unlockedHints}</p>
                   </div>
                 </div>
 
                 {/* 모든 힌트 표시 */}
                 {hints.length > 0 && (
                   <div>
-                    <h3 className="font-semibold mb-3">전체 힌트</h3>
+                    <h3 className="font-semibold mb-3">{tr.practiceClient.allHints}</h3>
                     <HintsCard hints={hints.slice(0, maxHints)} />
                   </div>
                 )}
@@ -505,10 +507,10 @@ export default function PracticeClient({ problemId }: PracticeClientProps) {
                       <MessageSquare className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
                       <div className="flex-1">
                         <p className="font-medium text-blue-800 dark:text-blue-200">
-                          문제가 어려우셨나요?
+                          {tr.practiceClient.hardQuestion}
                         </p>
                         <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
-                          AI 채팅에서 이 문제에 대해 질문하고 풀이 방법을 배워보세요.
+                          {tr.practiceClient.chatGuide}
                         </p>
                         <Button
                           size="sm"
@@ -516,7 +518,7 @@ export default function PracticeClient({ problemId }: PracticeClientProps) {
                           onClick={handleAskQuestion}
                         >
                           <MessageSquare className="h-4 w-4 mr-2" />
-                          이 문제에 대해 질문하기
+                          {tr.practiceClient.askQuestion}
                         </Button>
                       </div>
                     </div>
@@ -526,10 +528,10 @@ export default function PracticeClient({ problemId }: PracticeClientProps) {
                 <div className="flex gap-3">
                   <Button variant="outline" className="flex-1" onClick={handleRestart}>
                     <RefreshCw className="h-4 w-4 mr-2" />
-                    다시 도전
+                    {tr.practiceClient.retry}
                   </Button>
                   <Button className="flex-1" asChild>
-                    <Link href="/practice">다른 문제 풀기</Link>
+                    <Link href="/practice">{tr.practiceClient.otherProblem}</Link>
                   </Button>
                 </div>
               </CardContent>
@@ -549,7 +551,7 @@ export default function PracticeClient({ problemId }: PracticeClientProps) {
                 {/* 완료 버튼 */}
                 <Card>
                   <CardHeader className="pb-3">
-                    <CardTitle className="text-sm">문제 풀이 완료</CardTitle>
+                    <CardTitle className="text-sm">{tr.practiceClient.completeTitle}</CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-3">
                     <Button
@@ -561,27 +563,27 @@ export default function PracticeClient({ problemId }: PracticeClientProps) {
                       {isCheckingSubmission ? (
                         <>
                           <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                          확인 중...
+                          {tr.practiceClient.checking}
                         </>
                       ) : (
                         <>
                           <CheckCircle className="h-4 w-4 mr-2" />
-                          풀었어요!
+                          {tr.practiceClient.iSolved}
                         </>
                       )}
                     </Button>
                     {!atcoderHandle && (
                       <p className="text-xs text-foreground">
-                        AtCoder 핸들을 연동해주세요
+                        {tr.practiceClient.noHandle}
                       </p>
                     )}
                     {isSolved === false && (
                       <p className="text-sm text-amber-600 dark:text-amber-400">
-                        아직 AC를 받지 못했습니다. 다시 시도해보세요!
+                        {tr.practiceClient.notAC}
                       </p>
                     )}
                     <p className="text-xs text-foreground">
-                      AtCoder에서 AC를 받은 후 버튼을 눌러주세요
+                      {tr.practiceClient.afterAC}
                     </p>
                   </CardContent>
                 </Card>
@@ -591,13 +593,13 @@ export default function PracticeClient({ problemId }: PracticeClientProps) {
                   <CardHeader className="pb-3">
                     <CardTitle className="text-sm flex items-center gap-2">
                       <Lightbulb className="h-4 w-4" />
-                      힌트 ({Math.min(maxHints, hints.length)}개)
+                      {tr.practiceClient.hints(Math.min(maxHints, hints.length))}
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     {hints.length === 0 ? (
                       <p className="text-sm text-foreground">
-                        힌트를 불러올 수 없습니다
+                        {tr.practiceClient.noHints}
                       </p>
                     ) : (
                       <div className="space-y-2">
@@ -607,7 +609,7 @@ export default function PracticeClient({ problemId }: PracticeClientProps) {
                             onClick={() => setSelectedHintIndex(index)}
                             className="w-full p-3 rounded-lg border text-sm bg-background hover:bg-muted/50 transition-colors flex items-center justify-between"
                           >
-                            <span className="font-medium">힌트 {index + 1}</span>
+                            <span className="font-medium">{tr.practiceClient.hint(index + 1)}</span>
                             <Eye className="h-4 w-4 text-foreground" />
                           </button>
                         ))}
@@ -625,7 +627,7 @@ export default function PracticeClient({ problemId }: PracticeClientProps) {
                     <DialogHeader>
                       <DialogTitle className="flex items-center gap-2">
                         <Lightbulb className="h-5 w-5 text-amber-500" />
-                        힌트 {selectedHintIndex !== null ? selectedHintIndex + 1 : ""}
+                        {selectedHintIndex !== null ? tr.practiceClient.hint(selectedHintIndex + 1) : ""}
                       </DialogTitle>
                     </DialogHeader>
                     {selectedHintIndex !== null && hints[selectedHintIndex] && (
@@ -647,7 +649,7 @@ export default function PracticeClient({ problemId }: PracticeClientProps) {
                   className="w-full"
                   onClick={handleGiveUp}
                 >
-                  포기하기
+                  {tr.practiceClient.giveUp}
                 </Button>
               </div>
             </div>
