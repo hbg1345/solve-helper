@@ -31,15 +31,40 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
-export default async function RootLayout({
+async function AppShell({
+  children,
+  authButton,
+  mobileAuthButton,
+}: {
+  children: React.ReactNode;
+  authButton: React.ReactNode;
+  mobileAuthButton: React.ReactNode;
+}) {
+  const cookieStore = await cookies();
+  const langCookie = cookieStore.get("appLanguage")?.value;
+  const initialLang: Lang =
+    langCookie === "en" || langCookie === "ja" ? langCookie : "ko";
+
+  return (
+    <LanguageProvider initialLang={initialLang}>
+      <AnimeModeProvider>
+        <CollapsibleHeader
+          authButton={authButton}
+          mobileAuthButton={mobileAuthButton}
+        />
+        {children}
+        <SpeedInsights />
+        <Analytics />
+      </AnimeModeProvider>
+    </LanguageProvider>
+  );
+}
+
+export default function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const cookieStore = await cookies();
-  const langCookie = cookieStore.get("appLanguage")?.value;
-  const initialLang: Lang = langCookie === "en" || langCookie === "ja" ? langCookie : "ko";
-
   const authButton = !hasEnvVars ? (
     <EnvVarWarning />
   ) : (
@@ -64,14 +89,14 @@ export default async function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <LanguageProvider initialLang={initialLang}>
-            <AnimeModeProvider>
-              <CollapsibleHeader authButton={authButton} mobileAuthButton={mobileAuthButton} />
+          <Suspense>
+            <AppShell
+              authButton={authButton}
+              mobileAuthButton={mobileAuthButton}
+            >
               {children}
-              <SpeedInsights />
-              <Analytics />
-            </AnimeModeProvider>
-          </LanguageProvider>
+            </AppShell>
+          </Suspense>
         </ThemeProvider>
       </body>
     </html>

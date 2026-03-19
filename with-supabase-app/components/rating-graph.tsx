@@ -22,6 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { TrendingUp, Trophy, Zap } from "lucide-react";
 import { RatingHistoryEntry, getRatingHistory } from "@/app/actions";
 import { getRatingColor } from "@/lib/atcoder/rating-history";
+import { useLanguage } from "./language-context";
 
 interface RatingGraphProps {
   atcoderHandle: string;
@@ -83,6 +84,7 @@ function calculateMovingAverage(
 }
 
 export function RatingGraph({ atcoderHandle }: RatingGraphProps) {
+  const { tr } = useLanguage();
   const [history, setHistory] = useState<RatingHistoryEntry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -357,7 +359,7 @@ export function RatingGraph({ atcoderHandle }: RatingGraphProps) {
         </CardHeader>
         <CardContent>
           <div className="text-foreground text-sm">
-            레이팅 기록이 없습니다.
+            {tr.ratingGraph.noHistory}
           </div>
         </CardContent>
       </Card>
@@ -374,7 +376,7 @@ export function RatingGraph({ atcoderHandle }: RatingGraphProps) {
               Rating Graph
             </CardTitle>
             <CardDescription>
-              총 {history.length}회 Rated 대회 참가
+              {tr.ratingGraph.ratedCount(history.length)}
             </CardDescription>
           </div>
           <div className="flex items-center gap-3">
@@ -430,14 +432,14 @@ export function RatingGraph({ atcoderHandle }: RatingGraphProps) {
                     </p>
                   </div>
                   <div>
-                    <p className="text-foreground text-xs">변화</p>
+                    <p className="text-foreground text-xs">{tr.ratingGraph.change}</p>
                     <p className={`font-medium ${displayData.increment >= 0 ? "text-green-600" : "text-red-600"}`}>
                       {displayData.increment >= 0 ? "+" : ""}{displayData.increment}
                     </p>
                   </div>
                   <div>
-                    <p className="text-foreground text-xs">순위</p>
-                    <p className="font-medium">{displayData.place}위</p>
+                    <p className="text-foreground text-xs">{tr.ratingGraph.rank}</p>
+                    <p className="font-medium">{displayData.place}{tr.ratingGraph.rankSuffix}</p>
                   </div>
                   {displayData.movingAverage && (
                     <div>
@@ -563,7 +565,7 @@ export function RatingGraph({ atcoderHandle }: RatingGraphProps) {
                 Performance Graph
               </h3>
               <p className="text-sm text-foreground">
-                대회별 퍼포먼스 추이
+                {tr.ratingGraph.perfTrend}
               </p>
             </div>
             <div className="flex items-center gap-3">

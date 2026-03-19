@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { SolvedProblem } from "@/app/actions";
+import { useLanguage } from "./language-context";
 
 interface DifficultyDistributionProps {
   problems: SolvedProblem[];
@@ -49,6 +50,7 @@ function getLevelColor(levelName: string): string {
 }
 
 export function DifficultyDistribution({ problems }: DifficultyDistributionProps) {
+  const { tr } = useLanguage();
   const distribution = useMemo(() => {
     const counts: Record<string, number> = {};
 
@@ -96,10 +98,10 @@ export function DifficultyDistribution({ problems }: DifficultyDistributionProps
     <Card className="w-full">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <span className="text-foreground text-sm font-normal">난이도 분포</span>
+          <span className="text-foreground text-sm font-normal">{tr.difficultyDist.title}</span>
         </CardTitle>
         <CardDescription className="text-2xl font-bold text-foreground">
-          {total.toLocaleString()}문제 해결
+          {tr.difficultyDist.solved(total)}
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -114,7 +116,7 @@ export function DifficultyDistribution({ problems }: DifficultyDistributionProps
                       formatter={(value, name) => (
                         <div className="flex items-center gap-2">
                           <span>{name}</span>
-                          <span className="font-bold">{value}문제</span>
+                          <span className="font-bold">{tr.difficultyDist.problemCount(Number(value))}</span>
                           <span className="text-foreground">
                             ({((Number(value) / total) * 100).toFixed(1)}%)
                           </span>
@@ -152,9 +154,9 @@ export function DifficultyDistribution({ problems }: DifficultyDistributionProps
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b bg-muted/50">
-                    <th className="px-4 py-2 text-left font-medium">레벨</th>
-                    <th className="px-4 py-2 text-right font-medium">문제</th>
-                    <th className="px-4 py-2 text-right font-medium">비율</th>
+                    <th className="px-4 py-2 text-left font-medium">{tr.difficultyDist.level}</th>
+                    <th className="px-4 py-2 text-right font-medium">{tr.difficultyDist.problems}</th>
+                    <th className="px-4 py-2 text-right font-medium">{tr.difficultyDist.ratio}</th>
                   </tr>
                 </thead>
                 <tbody>

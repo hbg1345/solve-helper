@@ -186,9 +186,6 @@ export function ProfileWithGrass({
       <>
         <div className="flex flex-col gap-2 self-start w-full">
           <h1 className="text-3xl font-bold tracking-tight">{tr.profile.title}</h1>
-          <p className="text-foreground">
-            {tr.profile.subtitle}
-          </p>
         </div>
         <Card className="w-full max-w-md">
           <CardHeader>
@@ -220,9 +217,6 @@ export function ProfileWithGrass({
             <RefreshCw className={`h-3.5 w-3.5 ${isPending ? "animate-spin" : ""}`} />
           </Button>
         </div>
-        <p className="text-foreground">
-          프로필 정보를 확인하고 관리하세요
-        </p>
       </div>
       <div className="w-full max-w-5xl space-y-6">
         <div className="flex flex-col md:flex-row gap-6">

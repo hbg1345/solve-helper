@@ -11,10 +11,12 @@ import {
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getMonthlyTokenUsage, getTotalTokenUsage, TokenUsage } from "@/app/actions";
 import { Zap } from "lucide-react";
+import { useLanguage } from "./language-context";
 
 type UsageTab = "month" | "total";
 
 export function TokenUsageCard() {
+  const { tr } = useLanguage();
   const [monthUsage, setMonthUsage] = useState<TokenUsage | null>(null);
   const [totalUsage, setTotalUsage] = useState<TokenUsage | null>(null);
   const [loading, setLoading] = useState(true);
@@ -46,7 +48,7 @@ export function TokenUsageCard() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Zap className="h-5 w-5" />
-            API 사용량
+            {tr.tokenUsage.title}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -62,45 +64,45 @@ export function TokenUsageCard() {
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
             <Zap className="h-5 w-5" />
-            API 사용량
+            {tr.tokenUsage.title}
           </CardTitle>
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as UsageTab)}>
             <TabsList className="h-8">
               <TabsTrigger value="month" className="text-xs px-3">
-                이번 달
+                {tr.tokenUsage.thisMonth}
               </TabsTrigger>
               <TabsTrigger value="total" className="text-xs px-3">
-                전체
+                {tr.tokenUsage.total}
               </TabsTrigger>
             </TabsList>
           </Tabs>
         </div>
         <CardDescription>
-          {activeTab === "month" ? "이번 달의" : "전체"} AI 토큰 사용 현황
+          {tr.tokenUsage.usage(activeTab === "month" ? tr.tokenUsage.thisMonth : tr.tokenUsage.total)}
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
-            <p className="text-sm text-foreground">입력 토큰</p>
+            <p className="text-sm text-foreground">{tr.tokenUsage.inputTokens}</p>
             <p className="text-2xl font-bold">
               {usage?.total_input_tokens.toLocaleString() || 0}
             </p>
           </div>
           <div className="space-y-1">
-            <p className="text-sm text-foreground">출력 토큰</p>
+            <p className="text-sm text-foreground">{tr.tokenUsage.outputTokens}</p>
             <p className="text-2xl font-bold">
               {usage?.total_output_tokens.toLocaleString() || 0}
             </p>
           </div>
           <div className="space-y-1">
-            <p className="text-sm text-foreground">총 토큰</p>
+            <p className="text-sm text-foreground">{tr.tokenUsage.totalTokens}</p>
             <p className="text-2xl font-bold text-primary">
               {usage?.total_tokens.toLocaleString() || 0}
             </p>
           </div>
           <div className="space-y-1">
-            <p className="text-sm text-foreground">요청 수</p>
+            <p className="text-sm text-foreground">{tr.tokenUsage.requests}</p>
             <p className="text-2xl font-bold">
               {usage?.request_count.toLocaleString() || 0}
             </p>
