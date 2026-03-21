@@ -48,14 +48,27 @@ function ProblemBadge({ problem }: { problem: SolvedProblem }) {
   );
 }
 
+// 난이도 → 색상 구간 인덱스 (높을수록 높은 색)
+function getColorRank(difficulty: number | null): number {
+  if (difficulty === null) return -1;
+  if (difficulty < 400) return 0;
+  if (difficulty < 800) return 1;
+  if (difficulty < 1200) return 2;
+  if (difficulty < 1600) return 3;
+  if (difficulty < 2000) return 4;
+  if (difficulty < 2400) return 5;
+  if (difficulty < 2800) return 6;
+  if (difficulty < 3200) return 7;
+  return 8;
+}
+
 export function SolvedProblemsList({ problems }: SolvedProblemsProps) {
-  // 난이도 순 내림차순 정렬 (null은 맨 뒤로)
+  // 색상 구간 내림차순 → 같은 색이면 이름 오름차순, null은 맨 뒤
   const sortedProblems = useMemo(() => {
     return [...problems].sort((a, b) => {
-      if (a.difficulty === null && b.difficulty === null) return a.problem_id.localeCompare(b.problem_id);
-      if (a.difficulty === null) return 1;
-      if (b.difficulty === null) return -1;
-      if (a.difficulty !== b.difficulty) return b.difficulty - a.difficulty;
+      const rankA = getColorRank(a.difficulty);
+      const rankB = getColorRank(b.difficulty);
+      if (rankA !== rankB) return rankB - rankA;
       return a.problem_id.localeCompare(b.problem_id);
     });
   }, [problems]);

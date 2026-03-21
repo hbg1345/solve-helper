@@ -156,7 +156,7 @@ async function ProblemsContent({
   const params = await searchParams;
   const tr = await getServerTr();
   const page = params.page ? parseInt(params.page, 10) : 1;
-  const filter = (params.filter as ContestFilter) || "all";
+  const filter = (params.filter as ContestFilter) || "abc";
   const search = params.search || "";
   const hideCompleted = params.hideCompleted === "true";
 

@@ -11,7 +11,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MessageSquare, Swords } from "lucide-react";
+import { ExternalLink, MessageSquare, Swords } from "lucide-react";
 
 interface ProblemLinkProps {
   problemId: string;
@@ -108,6 +108,12 @@ export function ProblemLink({
         <DropdownMenuItem onClick={goToPractice} className="gap-2 cursor-pointer">
           <Swords className="h-3.5 w-3.5" />
           도전
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild className="gap-2 cursor-pointer">
+          <a href={problemUrl} target="_blank" rel="noopener noreferrer">
+            <ExternalLink className="h-3.5 w-3.5" />
+            AtCoder
+          </a>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>
