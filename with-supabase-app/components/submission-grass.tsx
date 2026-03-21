@@ -12,6 +12,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface SubmissionGrassProps {
   userId: string;
@@ -244,6 +250,7 @@ export function SubmissionGrass({ userId }: SubmissionGrassProps) {
           </div>
 
           {/* 주별 데이터 (월 레이블 포함) */}
+          <TooltipProvider delayDuration={100}>
           {weeks.map((week, weekIndex) => {
             const monthLabel = monthLabels.find(
               (label) => label.weekIndex === weekIndex
@@ -258,11 +265,8 @@ export function SubmissionGrass({ userId }: SubmissionGrassProps) {
                 {week.map((day, dayIndex) => {
                   const dateKey = day.date.toISOString().split("T")[0];
                   const isCurrentYear = day.date.getFullYear() === selectedYear;
-                  const tooltip = isCurrentYear
-                    ? `${dateKey}\nAC ${day.count}회`
-                    : "";
 
-                  return (
+                  const cell = (
                     <div
                       key={`${weekIndex}-${dayIndex}`}
                       className={`w-3 h-[14px] rounded-sm ${getColor(day.count)} ${
@@ -270,14 +274,25 @@ export function SubmissionGrass({ userId }: SubmissionGrassProps) {
                           ? "hover:ring-1 hover:ring-primary cursor-pointer"
                           : "opacity-30"
                       } transition-colors`}
-                      title={tooltip}
-                      aria-label={tooltip}
                     />
+                  );
+
+                  if (!isCurrentYear) return cell;
+
+                  return (
+                    <Tooltip key={`${weekIndex}-${dayIndex}`}>
+                      <TooltipTrigger asChild>{cell}</TooltipTrigger>
+                      <TooltipContent side="top">
+                        <p className="font-medium">{dateKey}</p>
+                        <p>AC {day.count}회</p>
+                      </TooltipContent>
+                    </Tooltip>
                   );
                 })}
               </div>
             );
           })}
+          </TooltipProvider>
         </div>
       </div>
 

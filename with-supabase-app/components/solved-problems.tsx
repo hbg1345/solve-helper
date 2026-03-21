@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { cn } from "@/lib/utils";
 import { SolvedProblem } from "@/app/actions";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useMemo } from "react";
@@ -53,10 +52,11 @@ export function SolvedProblemsList({ problems }: SolvedProblemsProps) {
   // 난이도 순 내림차순 정렬 (null은 맨 뒤로)
   const sortedProblems = useMemo(() => {
     return [...problems].sort((a, b) => {
-      if (a.difficulty === null && b.difficulty === null) return 0;
+      if (a.difficulty === null && b.difficulty === null) return a.problem_id.localeCompare(b.problem_id);
       if (a.difficulty === null) return 1;
       if (b.difficulty === null) return -1;
-      return b.difficulty - a.difficulty;
+      if (a.difficulty !== b.difficulty) return b.difficulty - a.difficulty;
+      return a.problem_id.localeCompare(b.problem_id);
     });
   }, [problems]);
 
