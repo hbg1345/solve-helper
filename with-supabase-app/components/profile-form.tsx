@@ -306,9 +306,6 @@ export function ProfileWithGrass({
 
         {atcoder_handle && <RatingGraph key={refreshKey} atcoderHandle={atcoder_handle} />}
 
-        {/* 연습 기록 */}
-        <PracticeHistory sessions={practiceSessions} stats={practiceStats} />
-
       {atcoder_handle && (
         <Card className="w-full">
           <CardHeader>
@@ -345,6 +342,9 @@ export function ProfileWithGrass({
           </Card>
         </>
       )}
+
+        {/* 도전 기록 */}
+        <PracticeHistory sessions={practiceSessions} stats={practiceStats} />
       </div>
     </>
   );

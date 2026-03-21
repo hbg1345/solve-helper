@@ -8,8 +8,6 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import { OngoingSessionCard } from "@/components/ongoing-session-card";
-import { PracticeHistory } from "@/components/practice-history";
-import { getPracticeSessions, getPracticeStats } from "@/app/actions";
 import { GachaReveal } from "@/components/gacha-reveal";
 
 async function PracticeContent({
@@ -70,10 +68,8 @@ async function PracticeContent({
     );
   }
 
-  const [problems, practiceSessions, practiceStats] = await Promise.all([
+  const [problems] = await Promise.all([
     getRecommendedProblems(userData.rating, fromEpoch, contestType),
-    getPracticeSessions(50),
-    getPracticeStats(),
   ]);
 
   if (problems.length === 0) {
@@ -171,8 +167,6 @@ async function PracticeContent({
         fromEpoch={fromEpoch}
         contestType={contestType}
       />
-
-      <PracticeHistory sessions={practiceSessions} stats={practiceStats} />
     </>
   );
 }

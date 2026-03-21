@@ -37,7 +37,7 @@ async function UserDetails() {
   };
 
   const [practiceSessions, practiceStats] = await Promise.all([
-    getPracticeSessions(20),
+    getPracticeSessions(200),
     getPracticeStats(),
   ]);
 
