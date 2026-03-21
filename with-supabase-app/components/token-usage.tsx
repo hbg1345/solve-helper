@@ -84,26 +84,14 @@ export function TokenUsageCard() {
       <CardContent>
         <div className="grid grid-cols-2 gap-4">
           <div className="space-y-1">
-            <p className="text-sm text-foreground">{tr.tokenUsage.inputTokens}</p>
+            <p className="text-sm text-foreground">{tr.tokenUsage.messagesSent}</p>
             <p className="text-2xl font-bold">
-              {usage?.total_input_tokens.toLocaleString() || 0}
+              {usage?.request_count.toLocaleString() || 0}
             </p>
           </div>
           <div className="space-y-1">
-            <p className="text-sm text-foreground">{tr.tokenUsage.outputTokens}</p>
-            <p className="text-2xl font-bold">
-              {usage?.total_output_tokens.toLocaleString() || 0}
-            </p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm text-foreground">{tr.tokenUsage.totalTokens}</p>
+            <p className="text-sm text-foreground">{tr.tokenUsage.responsesReceived}</p>
             <p className="text-2xl font-bold text-primary">
-              {usage?.total_tokens.toLocaleString() || 0}
-            </p>
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm text-foreground">{tr.tokenUsage.requests}</p>
-            <p className="text-2xl font-bold">
               {usage?.request_count.toLocaleString() || 0}
             </p>
           </div>

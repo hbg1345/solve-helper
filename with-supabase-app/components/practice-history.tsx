@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { TrendingUp, Lightbulb } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import type { PracticeSession, PracticeStats } from "@/app/actions";
@@ -239,6 +238,9 @@ function FailedProblemsList({ sessions }: { sessions: PracticeSession[] }) {
 export function PracticeHistory({ sessions, stats }: PracticeHistoryProps) {
   const { tr } = useLanguage();
   const currentYear = new Date().getFullYear();
+  const successRate = stats.totalSessions > 0
+    ? Math.round((stats.solvedCount / stats.totalSessions) * 100)
+    : 0;
 
   if (sessions.length === 0) {
     return (
@@ -254,10 +256,6 @@ export function PracticeHistory({ sessions, stats }: PracticeHistoryProps) {
     );
   }
 
-  const successRate = stats.totalSessions > 0
-    ? Math.round((stats.solvedCount / stats.totalSessions) * 100)
-    : 0;
-
   return (
     <Card className="w-full">
       <CardHeader>
@@ -267,44 +265,6 @@ export function PracticeHistory({ sessions, stats }: PracticeHistoryProps) {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* 통계 요약 */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-          <div className="p-4 bg-muted/50 rounded-lg text-center">
-            <p className="text-2xl font-bold">{stats.totalSessions}</p>
-            <p className="text-xs text-muted-foreground">{tr.practiceHistory.totalSessions}</p>
-          </div>
-          <div className="p-4 bg-muted/50 rounded-lg text-center">
-            <div className="flex items-center justify-center gap-1">
-              <TrendingUp className={cn(
-                "h-5 w-5",
-                successRate >= 50 ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"
-              )} />
-              <p className={cn(
-                "text-2xl font-bold",
-                successRate >= 50 ? "text-green-600 dark:text-green-400" : "text-amber-600 dark:text-amber-400"
-              )}>
-                {successRate}%
-              </p>
-            </div>
-            <p className="text-xs text-muted-foreground">
-              {tr.practiceHistory.successRate(stats.solvedCount, stats.totalSessions)}
-            </p>
-          </div>
-          <div className="p-4 bg-muted/50 rounded-lg text-center">
-            <p className="text-2xl font-bold font-mono">
-              {tr.practiceHistory.formatElapsedTime(Math.round(stats.avgElapsedTime))}
-            </p>
-            <p className="text-xs text-muted-foreground">{tr.practiceHistory.avgTime}</p>
-          </div>
-          <div className="p-4 bg-muted/50 rounded-lg text-center">
-            <div className="flex items-center justify-center gap-1">
-              <Lightbulb className="h-5 w-5 text-amber-500" />
-              <p className="text-2xl font-bold">{stats.avgHintsUsed.toFixed(1)}</p>
-            </div>
-            <p className="text-xs text-muted-foreground">{tr.practiceHistory.avgHints}</p>
-          </div>
-        </div>
-
         {/* 성공 잔디 */}
         <PracticeGrass sessions={sessions} year={currentYear} />
 

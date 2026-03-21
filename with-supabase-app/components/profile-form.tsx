@@ -218,8 +218,28 @@ export function ProfileWithGrass({
           </Button>
         </div>
       </div>
-      <div className="w-full max-w-5xl space-y-6">
-        <div className="flex flex-col md:flex-row gap-6">
+      <div className="w-full max-w-5xl flex gap-6 items-start">
+        {/* 사이드 TOC */}
+        <nav className="hidden xl:flex flex-col gap-1 sticky top-20 w-40 shrink-0 text-sm">
+          {[
+            { id: "profile-info", label: tr.profile.toc.info },
+            { id: "rating-graph", label: tr.profile.toc.rating },
+            { id: "ac-table", label: tr.profile.toc.acTable },
+            { id: "solved-problems", label: tr.profile.toc.solved },
+            { id: "challenge-history", label: tr.profile.toc.challenges },
+          ].map(({ id, label }) => (
+            <a
+              key={id}
+              href={`#${id}`}
+              className="text-muted-foreground hover:text-foreground truncate transition-colors py-0.5"
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
+
+        <div className="flex-1 min-w-0 space-y-6">
+        <div id="profile-info" className="flex flex-col md:flex-row gap-6">
           <Card
             className="w-full md:flex-1 border-2"
             style={{ borderColor: getRatingColor(rating ?? 0) }}
@@ -304,47 +324,54 @@ export function ProfileWithGrass({
           </div>
         </div>
 
-        {atcoder_handle && <RatingGraph key={refreshKey} atcoderHandle={atcoder_handle} />}
+        <div id="rating-graph">
+          {atcoder_handle && <RatingGraph key={refreshKey} atcoderHandle={atcoder_handle} />}
+        </div>
 
-      {atcoder_handle && (
-        <Card className="w-full">
-          <CardHeader>
-            <CardTitle>AC Table</CardTitle>
-            <CardDescription>
-              {tr.profile.acTableDesc}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <SubmissionGrass key={refreshKey} userId={atcoder_handle} />
-          </CardContent>
-        </Card>
-      )}
+        <div id="ac-table">
+          {atcoder_handle && (
+            <Card className="w-full">
+              <CardHeader>
+                <CardTitle>AC Table</CardTitle>
+                <CardDescription>{tr.profile.acTableDesc}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <SubmissionGrass key={refreshKey} userId={atcoder_handle} />
+              </CardContent>
+            </Card>
+          )}
+        </div>
 
-      {solvedLoading ? (
-        <Card className="w-full">
-          <CardContent className="pt-6">
-            <div className="h-24 bg-muted animate-pulse rounded" />
-          </CardContent>
-        </Card>
-      ) : solvedProblems.length > 0 && (
-        <>
-          <DifficultyDistribution problems={solvedProblems} />
-          <Card className="w-full">
-            <CardHeader>
-              <CardTitle>Solved Problems</CardTitle>
-              <CardDescription>
-                {tr.profile.solvedCount(solvedProblems.length)}
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <SolvedProblemsList problems={solvedProblems} />
-            </CardContent>
-          </Card>
-        </>
-      )}
+        <div id="solved-problems">
+          {solvedLoading ? (
+            <Card className="w-full">
+              <CardContent className="pt-6">
+                <div className="h-24 bg-muted animate-pulse rounded" />
+              </CardContent>
+            </Card>
+          ) : solvedProblems.length > 0 && (
+            <>
+              <DifficultyDistribution problems={solvedProblems} />
+              <Card className="w-full mt-6">
+                <CardHeader>
+                  <CardTitle>Solved Problems</CardTitle>
+                  <CardDescription>
+                    {tr.profile.solvedCount(solvedProblems.length)}
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <SolvedProblemsList problems={solvedProblems} />
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </div>
 
         {/* 도전 기록 */}
-        <PracticeHistory sessions={practiceSessions} stats={practiceStats} />
+        <div id="challenge-history">
+          <PracticeHistory sessions={practiceSessions} stats={practiceStats} />
+        </div>
+        </div>
       </div>
     </>
   );
