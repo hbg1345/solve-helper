@@ -19,13 +19,7 @@ import { cn } from "@/lib/utils";
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import {
-  ChevronLeft,
-  ChevronRight,
-  ChevronsLeft,
-  ChevronsRight,
-  Search,
-} from "lucide-react";
+import { ChevronLeft, ChevronRight, Search } from "lucide-react";
 
 /**
  * AtCoder 레이팅 색상 (난이도에 따라)
@@ -222,18 +216,14 @@ async function ProblemsContent({
   };
 
   // 페이지네이션 컴포넌트
-  const Pagination = () => (
-    <div className="flex items-center justify-end flex-wrap gap-1">
-      <div className="flex items-center gap-1">
-        {/* 더블 왼쪽 화살표: 10페이지 뒤로 */}
-        {currentPage > 10 && (
-          <Button variant="outline" size="icon" asChild>
-            <Link href={buildUrl(currentPage - 10)}>
-              <ChevronsLeft className="h-4 w-4" />
-            </Link>
-          </Button>
-        )}
-        {/* 왼쪽 화살표: 1페이지 뒤로 */}
+  const Pagination = () => {
+    // 현재 페이지 기준 10개 윈도우
+    const windowStart = Math.floor((currentPage - 1) / 10) * 10 + 1;
+    const windowEnd = Math.min(windowStart + 9, totalPages);
+    const pages = Array.from({ length: windowEnd - windowStart + 1 }, (_, i) => windowStart + i);
+
+    return (
+      <div className="flex items-center justify-center gap-1">
         {currentPage > 1 && (
           <Button variant="outline" size="icon" asChild>
             <Link href={buildUrl(currentPage - 1)}>
@@ -241,33 +231,16 @@ async function ProblemsContent({
             </Link>
           </Button>
         )}
-        {/* 페이지 번호들 */}
-        {Array.from({ length: totalPages }, (_, i) => i + 1)
-          .filter((pageNum) => {
-            return (
-              pageNum === 1 ||
-              pageNum === totalPages ||
-              (pageNum >= currentPage - 2 && pageNum <= currentPage + 2)
-            );
-          })
-          .map((pageNum, idx, array) => {
-            const showEllipsis = idx > 0 && pageNum - array[idx - 1] > 1;
-            return (
-              <div key={pageNum} className="flex items-center gap-1">
-                {showEllipsis && (
-                  <span className="px-2 text-foreground">...</span>
-                )}
-                <Button
-                  variant={pageNum === currentPage ? "default" : "outline"}
-                  size="sm"
-                  asChild
-                >
-                  <Link href={buildUrl(pageNum)}>{pageNum}</Link>
-                </Button>
-              </div>
-            );
-          })}
-        {/* 오른쪽 화살표: 1페이지 앞으로 */}
+        {pages.map((pageNum) => (
+          <Button
+            key={pageNum}
+            variant={pageNum === currentPage ? "default" : "outline"}
+            size="sm"
+            asChild
+          >
+            <Link href={buildUrl(pageNum)}>{pageNum}</Link>
+          </Button>
+        ))}
         {currentPage < totalPages && (
           <Button variant="outline" size="icon" asChild>
             <Link href={buildUrl(currentPage + 1)}>
@@ -275,17 +248,9 @@ async function ProblemsContent({
             </Link>
           </Button>
         )}
-        {/* 더블 오른쪽 화살표: 10페이지 앞으로 */}
-        {currentPage < totalPages - 9 && (
-          <Button variant="outline" size="icon" asChild>
-            <Link href={buildUrl(currentPage + 10)}>
-              <ChevronsRight className="h-4 w-4" />
-            </Link>
-          </Button>
-        )}
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <>
@@ -479,41 +444,31 @@ async function ProblemsContent({
       </Card>
 
       {/* Difficulty Legend */}
-      <Card className="w-full">
-        <CardHeader>
-          <CardTitle>Difficulty Legend</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-wrap gap-4">
+      <Card className="w-full py-0">
+        <CardContent className="py-3">
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
             {[
-              { range: "< 400", difficulty: 300, label: "Gray" },
-              { range: "400-799", difficulty: 600, label: "Brown" },
-              { range: "800-1199", difficulty: 1000, label: "Green" },
-              { range: "1200-1599", difficulty: 1400, label: "Cyan" },
-              { range: "1600-1999", difficulty: 1800, label: "Blue" },
-              { range: "2000-2399", difficulty: 2200, label: "Yellow" },
-              { range: "2400-2799", difficulty: 2600, label: "Orange" },
-              { range: "2800-3199", difficulty: 3000, label: "Red" },
-              { range: "3200+", difficulty: 3400, label: "Gold" },
-            ].map(({ range, difficulty, label }) => {
+              { label: "<400", difficulty: 300 },
+              { label: "<800", difficulty: 600 },
+              { label: "<1200", difficulty: 1000 },
+              { label: "<1600", difficulty: 1400 },
+              { label: "<2000", difficulty: 1800 },
+              { label: "<2400", difficulty: 2200 },
+              { label: "<2800", difficulty: 2600 },
+              { label: "<3200", difficulty: 3000 },
+              { label: "3200+", difficulty: 3400 },
+            ].map(({ label, difficulty }) => {
               const colors = getDifficultyColor(difficulty);
               const isGold = difficulty >= 3200;
               return (
-                <div key={range} className="flex items-center gap-2">
+                <span key={label} className={cn("text-sm font-bold", isGold ? "" : colors.text)}>
                   {isGold ? (
-                    <span className="text-sm font-medium">
-                      <span className="text-black dark:text-white">G</span>
-                      <span className="text-red-600 dark:text-red-400">old</span>
-                    </span>
-                  ) : (
-                    <span className={cn("text-sm font-medium", colors.text)}>
-                      {label}
-                    </span>
-                  )}
-                  <span className="text-sm text-black dark:text-white">
-                    ({range})
-                  </span>
-                </div>
+                    <>
+                      <span className="text-black dark:text-white">3</span>
+                      <span className="text-red-600 dark:text-red-400">200+</span>
+                    </>
+                  ) : label}
+                </span>
               );
             })}
           </div>
