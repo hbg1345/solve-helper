@@ -192,6 +192,17 @@ async function ProblemsContent({
   const paginatedContests = problemsByContest;
   const totalContests = rawTotalContests;
   const totalPages = Math.ceil(totalContests / CONTESTS_PER_PAGE);
+
+  // 현재 페이지 문제들 중 최대 열 수 계산
+  const maxCols = Math.max(
+    1,
+    ...paginatedContests.flatMap(([, problems]) =>
+      problems.map((p) => {
+        const idx = extractProblemIndex(p.id).toUpperCase();
+        return idx.charCodeAt(0) - 64; // A=1, B=2, ...
+      })
+    )
+  );
   const currentPage = Math.max(1, Math.min(page, totalPages || 1));
 
   // URL 생성 헬퍼 함수
@@ -347,11 +358,14 @@ async function ProblemsContent({
             <div className="min-w-[800px]">
               <div className="border rounded-lg overflow-hidden">
                 {/* Table Header */}
-                <div className="grid grid-cols-[200px_repeat(26,minmax(120px,1fr))] gap-0 bg-muted/50 dark:bg-muted/30 border-b border-border">
+                <div
+                  className="gap-0 bg-muted/50 dark:bg-muted/30 border-b border-border"
+                  style={{ display: "grid", gridTemplateColumns: `200px repeat(${maxCols}, minmax(120px, 1fr))` }}
+                >
                   <div className="p-3 font-semibold text-sm sticky left-0 bg-muted/50 dark:bg-muted/30 z-10 border-r border-border">
                     Contest
                   </div>
-                  {Array.from({ length: 26 }, (_, i) => (
+                  {Array.from({ length: maxCols }, (_, i) => (
                     <div
                       key={i}
                       className="p-2 text-center text-sm font-medium border-r last:border-r-0 border-border"
@@ -381,7 +395,8 @@ async function ProblemsContent({
                     return (
                       <div
                         key={contestId}
-                        className="grid grid-cols-[200px_repeat(26,minmax(120px,1fr))] gap-0 hover:bg-muted/30 dark:hover:bg-muted/20 transition-colors border-b border-border last:border-b-0"
+                        className="gap-0 hover:bg-muted/30 dark:hover:bg-muted/20 transition-colors border-b border-border last:border-b-0"
+                        style={{ display: "grid", gridTemplateColumns: `200px repeat(${maxCols}, minmax(120px, 1fr))` }}
                       >
                         {/* Contest Name */}
                         <div className="p-3 font-medium text-sm sticky left-0 bg-card dark:bg-card border-r border-border z-10">
@@ -396,7 +411,7 @@ async function ProblemsContent({
                         </div>
 
                         {/* Problems */}
-                        {Array.from({ length: 26 }, (_, i) => {
+                        {Array.from({ length: maxCols }, (_, i) => {
                           const letter = String.fromCharCode(65 + i);
                           const problem = problemMap.get(letter.toLowerCase());
 
