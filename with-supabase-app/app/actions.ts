@@ -1247,7 +1247,7 @@ export interface PracticeSession {
 /**
  * 사용자의 연습 세션 기록을 가져옵니다.
  */
-export async function getPracticeSessions(limit: number = 20): Promise<PracticeSession[]> {
+export async function getPracticeSessions(): Promise<PracticeSession[]> {
   const supabase = await createClient();
   const { data: claimsData } = await supabase.auth.getClaims();
   const claims = claimsData?.claims;
@@ -1263,8 +1263,7 @@ export async function getPracticeSessions(limit: number = 20): Promise<PracticeS
       .from("practice_sessions")
       .select("*")
       .eq("user_id", userId)
-      .order("created_at", { ascending: false })
-      .limit(limit);
+      .order("created_at", { ascending: false });
 
     if (error) {
       console.error("Failed to get practice sessions:", error);
