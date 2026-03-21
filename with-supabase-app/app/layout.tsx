@@ -55,6 +55,11 @@ async function AppShell({
           mobileAuthButton={mobileAuthButton}
         />
         {children}
+        <footer className="w-full py-4 text-center text-xs text-muted-foreground">
+          <a href="https://deboot.tistory.com/" target="_blank" rel="noopener noreferrer" className="hover:underline">
+            deboot.tistory.com
+          </a>
+        </footer>
         <SpeedInsights />
         <Analytics />
       </AnimeModeProvider>
