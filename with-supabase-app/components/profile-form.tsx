@@ -254,7 +254,14 @@ export function ProfileWithGrass({
             <a
               key={id}
               href={id === "profile-info" ? "#" : `#${id}`}
-              onClick={id === "profile-info" ? (e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: "smooth" }); } : undefined}
+              onClick={(e) => {
+                e.preventDefault();
+                if (id === "profile-info") {
+                  window.scrollTo({ top: 0, behavior: "smooth" });
+                } else {
+                  document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+                }
+              }}
               className={`truncate transition-colors py-0.5 ${
                 activeSection === id
                   ? "text-foreground font-medium"
