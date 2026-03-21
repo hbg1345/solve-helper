@@ -235,7 +235,7 @@ export function ProfileWithGrass({
             size="icon"
             onClick={handleRefresh}
             disabled={isPending}
-            className="h-7 w-7"
+            className="h-7 w-7 focus-visible:ring-0 border-0"
           >
             <RefreshCw className={`h-3.5 w-3.5 ${isPending ? "animate-spin" : ""}`} />
           </Button>

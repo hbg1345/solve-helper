@@ -12,10 +12,10 @@ import { useLanguage } from "./language-context";
 import { useRouter } from "next/navigation";
 import type { Lang } from "@/lib/translations";
 
-const LANGUAGES: { code: Lang; flag: string; label: string }[] = [
-  { code: "ko", flag: "🇰🇷", label: "한국어" },
-  { code: "en", flag: "🇺🇸", label: "English" },
-  { code: "ja", flag: "🇯🇵", label: "日本語" },
+const LANGUAGES: { code: Lang; short: string; label: string }[] = [
+  { code: "ko", short: "KR", label: "한국어" },
+  { code: "en", short: "EN", label: "English" },
+  { code: "ja", short: "JP", label: "日本語" },
 ];
 
 export function LanguageSelector() {
@@ -32,18 +32,17 @@ export function LanguageSelector() {
           className="gap-1.5 text-pixel-white/80 hover:text-pixel-cyan hover:bg-pixel-navy text-xs font-medium"
         >
           <Globe className="h-3.5 w-3.5" />
-          <span>{current.flag}</span>
-          <span className="hidden sm:inline">{current.label}</span>
+          <span>{current.short}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        {LANGUAGES.map(({ code, flag, label }) => (
+        {LANGUAGES.map(({ code, short, label }) => (
           <DropdownMenuItem
             key={code}
             onClick={() => { setLang(code); router.refresh(); }}
             className={lang === code ? "font-bold" : ""}
           >
-            {flag} {label}
+            {short} · {label}
           </DropdownMenuItem>
         ))}
       </DropdownMenuContent>

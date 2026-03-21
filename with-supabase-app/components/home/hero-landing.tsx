@@ -12,7 +12,7 @@ interface HeroLandingProps {
 
 const menuIcons = [Sword, MessageSquare, Archive];
 const menuIds = ["practice", "chat", "problems"] as const;
-const menuSubLabels = ["CHALLENGE", "CHAT", "ARCHIVE"];
+const menuSubLabels: string[] = [];
 const menuHrefs = ["/practice", "/chat", "/problems"];
 
 export function HeroLanding({ isLoggedIn }: HeroLandingProps) {
@@ -23,7 +23,6 @@ export function HeroLanding({ isLoggedIn }: HeroLandingProps) {
   const menuItems = menuIds.map((id, i) => ({
     id,
     label: tr.landing.menu[id].label,
-    subLabel: menuSubLabels[i],
     href: menuHrefs[i],
     icon: menuIcons[i],
     description: tr.landing.menu[id].description,
@@ -162,9 +161,6 @@ export function HeroLanding({ isLoggedIn }: HeroLandingProps) {
                       `}
                     >
                       {item.label}
-                    </span>
-                    <span className="font-game text-xs text-amber-600">
-                      {item.subLabel}
                     </span>
                   </div>
                 </Link>
