@@ -56,7 +56,7 @@ async function UserDetails() {
 export default function ProfilePage() {
   return (
     <div className="w-full">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         <div className="flex flex-col gap-8 items-start">
           <Suspense fallback={
             <div className="w-full max-w-md h-64 bg-muted animate-pulse rounded-xl" />

@@ -218,7 +218,7 @@ export function ProfileWithGrass({
           </Button>
         </div>
       </div>
-      <div className="w-full max-w-5xl flex gap-6 items-start">
+      <div className="w-full flex gap-8 items-start">
         {/* 사이드 TOC */}
         <nav className="hidden xl:flex flex-col gap-1 sticky top-20 w-40 shrink-0 text-sm">
           {[
@@ -238,8 +238,8 @@ export function ProfileWithGrass({
           ))}
         </nav>
 
-        <div className="flex-1 min-w-0 space-y-6">
-        <div id="profile-info" className="flex flex-col md:flex-row gap-6">
+        <div className="flex-1 min-w-0 max-w-5xl space-y-6">
+        <div id="profile-info" className="scroll-mt-24 flex flex-col md:flex-row gap-6">
           <Card
             className="w-full md:flex-1 border-2"
             style={{ borderColor: getRatingColor(rating ?? 0) }}
@@ -324,11 +324,11 @@ export function ProfileWithGrass({
           </div>
         </div>
 
-        <div id="rating-graph">
+        <div id="rating-graph" className="scroll-mt-24">
           {atcoder_handle && <RatingGraph key={refreshKey} atcoderHandle={atcoder_handle} />}
         </div>
 
-        <div id="ac-table">
+        <div id="ac-table" className="scroll-mt-24">
           {atcoder_handle && (
             <Card className="w-full">
               <CardHeader>
@@ -342,7 +342,7 @@ export function ProfileWithGrass({
           )}
         </div>
 
-        <div id="solved-problems">
+        <div id="solved-problems" className="scroll-mt-24">
           {solvedLoading ? (
             <Card className="w-full">
               <CardContent className="pt-6">
@@ -368,7 +368,7 @@ export function ProfileWithGrass({
         </div>
 
         {/* 도전 기록 */}
-        <div id="challenge-history">
+        <div id="challenge-history" className="scroll-mt-24">
           <PracticeHistory sessions={practiceSessions} stats={practiceStats} />
         </div>
         </div>

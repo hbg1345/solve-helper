@@ -334,8 +334,6 @@ async function ProblemsContent({
               {tr.problems.searchResult(search, totalContests)}
             </div>
           )}
-          {/* Pagination */}
-          <Pagination />
         </CardContent>
       </Card>
 
