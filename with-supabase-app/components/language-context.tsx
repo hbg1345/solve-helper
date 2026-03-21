@@ -2,6 +2,7 @@
 
 import { createContext, useContext, useState, ReactNode } from "react";
 import { Lang, Translations, translations } from "@/lib/translations";
+import { updateUserLanguage } from "@/app/actions";
 
 interface LanguageContextType {
   lang: Lang;
@@ -18,6 +19,7 @@ export function LanguageProvider({ children, initialLang = "ko" }: { children: R
     setLangState(value);
     localStorage.setItem("appLanguage", value);
     document.cookie = `appLanguage=${value}; path=/; max-age=${60 * 60 * 24 * 365}`;
+    updateUserLanguage(value).catch(() => {}); // 로그인 상태면 DB에도 저장
   };
 
   return (

@@ -1371,3 +1371,30 @@ export async function getGachaRecommendations(
 ): Promise<RecommendedProblem[]> {
   return getRecommendedProblems(userRating, fromEpoch, contestType);
 }
+
+export async function updateUserLanguage(language: "ko" | "en" | "ja"): Promise<void> {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims;
+  if (!claims) return;
+
+  await supabase
+    .from("user_info")
+    .update({ language })
+    .eq("id", claims.sub);
+}
+
+export async function getUserLanguage(): Promise<"ko" | "en" | "ja" | null> {
+  const supabase = await createClient();
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims;
+  if (!claims) return null;
+
+  const { data } = await supabase
+    .from("user_info")
+    .select("language")
+    .eq("id", claims.sub)
+    .single();
+
+  return (data?.language as "ko" | "en" | "ja") ?? null;
+}

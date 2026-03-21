@@ -13,6 +13,7 @@ import { hasEnvVars } from "@/lib/utils";
 import { Suspense } from "react";
 import { cookies } from "next/headers";
 import type { Lang } from "@/lib/translations";
+import { createClient } from "@/lib/supabase/server";
 import "katex/dist/katex.min.css";
 import "./globals.css";
 
@@ -43,8 +44,26 @@ async function AppShell({
 }) {
   const cookieStore = await cookies();
   const langCookie = cookieStore.get("appLanguage")?.value;
-  const initialLang: Lang =
-    langCookie === "en" || langCookie === "ja" ? langCookie : "ko";
+
+  // 로그인 사용자는 DB 언어 우선, 비로그인은 쿠키 fallback
+  let initialLang: Lang = langCookie === "en" || langCookie === "ja" ? langCookie : "ko";
+  try {
+    const supabase = await createClient();
+    const { data: claimsData } = await supabase.auth.getClaims();
+    const claims = claimsData?.claims;
+    if (claims) {
+      const { data } = await supabase
+        .from("user_info")
+        .select("language")
+        .eq("id", claims.sub)
+        .single();
+      if (data?.language === "en" || data?.language === "ja" || data?.language === "ko") {
+        initialLang = data.language;
+      }
+    }
+  } catch {
+    // fallback to cookie
+  }
 
   return (
     <LanguageProvider initialLang={initialLang}>
