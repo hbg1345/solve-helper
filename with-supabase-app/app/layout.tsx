@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist } from "next/font/google";
+import { Geist, Orbitron } from "next/font/google";
 import { ThemeProvider } from "next-themes";
 import { AnimeModeProvider } from "@/components/anime-mode-context";
 import { LanguageProvider } from "@/components/language-context";
@@ -14,7 +14,6 @@ import { Suspense } from "react";
 import { cookies } from "next/headers";
 import type { Lang } from "@/lib/translations";
 import { createClient } from "@/lib/supabase/server";
-import "katex/dist/katex.min.css";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -33,6 +32,13 @@ const geistSans = Geist({
   subsets: ["latin"],
 });
 
+const orbitron = Orbitron({
+  variable: "--font-orbitron",
+  display: "swap",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700", "800", "900"],
+});
+
 async function AppShell({
   children,
   authButton,
@@ -42,13 +48,15 @@ async function AppShell({
   authButton: React.ReactNode;
   mobileAuthButton: React.ReactNode;
 }) {
-  const cookieStore = await cookies();
+  const [cookieStore, supabase] = await Promise.all([
+    cookies(),
+    createClient(),
+  ]);
   const langCookie = cookieStore.get("appLanguage")?.value;
 
   // 로그인 사용자는 DB 언어 우선, 비로그인은 쿠키 fallback
   let initialLang: Lang = langCookie === "en" || langCookie === "ja" ? langCookie : "ko";
   try {
-    const supabase = await createClient();
     const { data: claimsData } = await supabase.auth.getClaims();
     const claims = claimsData?.claims;
     if (claims) {
@@ -103,7 +111,7 @@ export default function RootLayout({
 
   return (
     <html lang="ko" suppressHydrationWarning>
-      <body className={`${geistSans.className} antialiased`}>
+      <body className={`${geistSans.className} ${orbitron.variable} antialiased`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

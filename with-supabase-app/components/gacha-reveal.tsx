@@ -93,7 +93,8 @@ export function GachaReveal({ initialProblems, userRating, fromEpoch, contestTyp
   return (
     <div className="relative w-full flex-1 flex flex-col rounded-xl overflow-hidden">
       {/* 배경 */}
-      <div className="absolute inset-0 bg-white" />
+      <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: "url('/space-bg.jpg')" }} />
+      <div className="absolute inset-0 bg-black/30" />
       {/* 별 장식 */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         {[
@@ -101,7 +102,7 @@ export function GachaReveal({ initialProblems, userRating, fromEpoch, contestTyp
           "bottom-12 right-[25%]", "bottom-8 left-[20%]", "top-12 right-[40%]",
           "bottom-20 left-[45%]", "top-6 left-[60%]", "bottom-16 right-[10%]",
         ].map((pos, i) => (
-          <div key={i} className={`absolute ${pos} text-gray-300/40 text-[10px]`}>
+          <div key={i} className={`absolute ${pos} text-white/30 text-[10px]`}>
             {i % 3 === 0 ? "✦" : i % 3 === 1 ? "✧" : "·"}
           </div>
         ))}
@@ -127,16 +128,16 @@ export function GachaReveal({ initialProblems, userRating, fromEpoch, contestTyp
               <Button
                 size="lg"
                 onClick={handlePull}
-                className="relative overflow-hidden px-12 py-6 text-lg font-bold bg-gradient-to-b from-red-500 via-red-600 to-red-800 hover:from-red-400 hover:via-red-500 hover:to-red-700 border-0 border-b-4 border-b-red-950 text-white shadow-[0_6px_0_0_#7f1d1d,0_8px_16px_rgba(0,0,0,0.4)] hover:shadow-[0_4px_0_0_#7f1d1d,0_6px_12px_rgba(0,0,0,0.4)] hover:translate-y-[2px] active:shadow-[0_0px_0_0_#7f1d1d] active:translate-y-[6px] transition-all duration-100 rounded-xl"
+                className="gap-2 bg-white text-pixel-dark font-bold border-0 shadow-lg hover:bg-white/90"
               >
-                <Sparkles className="mr-2 h-4 w-4" />
+                <Sparkles className="h-4 w-4" />
                 {tr.gacha.pull}
               </Button>
             </motion.div>
           )}
           {state === "done" && (
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}>
-              <Button variant="ghost" onClick={handleRedraw} disabled={isRedrawing} className="gap-2 border border-pixel-darkgray text-pixel-dark hover:bg-pixel-dark/10">
+              <Button onClick={handleRedraw} disabled={isRedrawing} className="gap-2 bg-white text-pixel-dark font-bold border-0 shadow-lg hover:bg-white/90">
                 <RefreshCw className={`h-4 w-4 ${isRedrawing ? "animate-spin" : ""}`} />
                 {tr.gacha.rePull}
               </Button>

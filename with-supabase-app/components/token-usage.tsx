@@ -10,7 +10,6 @@ import {
 } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { getMonthlyTokenUsage, getTotalTokenUsage, TokenUsage } from "@/app/actions";
-import { Zap } from "lucide-react";
 import { useLanguage } from "./language-context";
 
 type UsageTab = "month" | "total";
@@ -44,11 +43,10 @@ export function TokenUsageCard() {
 
   if (loading) {
     return (
-      <Card className="w-full max-w-md">
+      <Card className="w-full h-full">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
-            <Zap className="h-5 w-5" />
-            {tr.tokenUsage.title}
+                        {tr.tokenUsage.title}
           </CardTitle>
         </CardHeader>
         <CardContent>
@@ -59,12 +57,11 @@ export function TokenUsageCard() {
   }
 
   return (
-    <Card className="w-full max-w-md">
+    <Card className="w-full h-full">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">
-            <Zap className="h-5 w-5" />
-            {tr.tokenUsage.title}
+                        {tr.tokenUsage.title}
           </CardTitle>
           <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as UsageTab)}>
             <TabsList className="h-8">

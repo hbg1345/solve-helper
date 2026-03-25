@@ -29,6 +29,44 @@
   <h1>Solve Helper</h1>
   <h2>Patch Notes</h2>
 
+  <!-- v0.5.2 -->
+  <div class="patch">
+    <div class="patch-header">
+      <span class="patch-version">v0.5.2</span>
+      <span class="patch-date">2026-03-25</span>
+    </div>
+
+    <div class="item">
+      <div class="item-title"><span class="tag tag-perf">PERF</span> Google Fonts render-blocking waterfall 제거</div>
+      <dl>
+        <dt>문제</dt><dd>FCP/LCP 3초 이상 — Orbitron 폰트 로드가 렌더링을 차단</dd>
+        <dt>원인</dt><dd>globals.css에서 @import url()로 Google Fonts를 로드하여 HTML → CSS → Google Fonts CSS → 폰트 파일 3단계 네트워크 waterfall 발생</dd>
+        <dt>해결</dt><dd>@import 삭제, next/font/google의 Orbitron으로 교체. CSS variable(--font-orbitron)로 주입하고 tailwind.config의 font-game이 이를 참조하도록 변경</dd>
+        <dt>결과</dt><dd>Next.js가 폰트를 self-host + preload하여 render-blocking 네트워크 왕복 제거 (예상 -1~2초)</dd>
+      </dl>
+    </div>
+
+    <div class="item">
+      <div class="item-title"><span class="tag tag-perf">PERF</span> Layout Supabase 호출 최적화</div>
+      <dl>
+        <dt>문제</dt><dd>모든 페이지에서 직렬 Supabase 호출로 TTFB 지연</dd>
+        <dt>원인</dt><dd>AppShell에서 cookies()→createClient() 직렬 호출, AuthButton에서 getUser() (네트워크 왕복) + 중복 user_info 쿼리</dd>
+        <dt>해결</dt><dd>1) cookies()와 createClient()를 Promise.all로 병렬화. 2) AuthButton의 getUser()를 getClaims() (JWT 로컬 파싱)으로 교체, email은 JWT claims에서 추출</dd>
+        <dt>결과</dt><dd>매 요청마다 Supabase auth 서버 네트워크 왕복 1회 제거 (예상 -0.5~1초)</dd>
+      </dl>
+    </div>
+
+    <div class="item">
+      <div class="item-title"><span class="tag tag-perf">PERF</span> KaTeX CSS 전역 로드 제거</div>
+      <dl>
+        <dt>문제</dt><dd>수학 수식이 없는 페이지(랜딩, 프로필 등)에서도 KaTeX CSS ~300KB 로드</dd>
+        <dt>원인</dt><dd>layout.tsx에서 import "katex/dist/katex.min.css"로 전역 로드</dd>
+        <dt>해결</dt><dd>layout.tsx에서 전역 import 삭제. KaTeX를 사용하는 컴포넌트(latex-renderer, problem-panel)는 이미 자체 import가 있어 영향 없음</dd>
+        <dt>결과</dt><dd>랜딩/프로필 등 비수식 페이지에서 불필요한 CSS 로드 제거</dd>
+      </dl>
+    </div>
+  </div>
+
   <!-- v0.5.0 -->
   <div class="patch">
     <div class="patch-header">

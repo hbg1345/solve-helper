@@ -77,7 +77,7 @@ export default {
         sm: "calc(var(--radius) - 4px)",
       },
       fontFamily: {
-        game: ['"Orbitron"', "sans-serif"],
+        game: ["var(--font-orbitron)", "sans-serif"],
       },
       animation: {
         "blink": "blink 1s step-end infinite",

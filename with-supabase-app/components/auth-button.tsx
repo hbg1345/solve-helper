@@ -1,14 +1,16 @@
 import Link from "next/link";
-import { Button } from "./ui/button";
 import { createClient } from "@/lib/supabase/server";
 import { ProfileDropdown } from "./profile-dropdown";
 
 export async function AuthButton() {
   const supabase = await createClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
+  // getClaims()는 JWT를 로컬에서 읽으므로 getUser()보다 훨씬 빠름
+  const { data: claimsData } = await supabase.auth.getClaims();
+  const claims = claimsData?.claims;
+  const userId = claims?.sub as string | undefined;
 
-  if (!user) {
+  if (!userId) {
     return (
       <div className="flex gap-2">
         <Link
@@ -25,14 +27,14 @@ export async function AuthButton() {
   const { data: userInfo } = await supabase
     .from("user_info")
     .select("avatar_url, atcoder_handle")
-    .eq("id", user.id)
+    .eq("id", userId)
     .single();
 
   return (
     <ProfileDropdown
       avatarUrl={userInfo?.avatar_url ?? null}
       handle={userInfo?.atcoder_handle ?? null}
-      email={user.email ?? null}
+      email={(claims?.email as string) ?? null}
     />
   );
 }
