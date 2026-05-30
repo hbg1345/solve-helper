@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { Lang, Translations, translations } from "@/lib/translations";
 import { updateUserLanguage } from "@/app/actions";
 
@@ -14,6 +14,15 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export function LanguageProvider({ children, initialLang = "ko" }: { children: ReactNode; initialLang?: Lang }) {
   const [lang, setLangState] = useState<Lang>(initialLang);
+
+  // 정적 렌더링을 위해 서버에서 쿠키를 읽지 않으므로, 클라이언트 마운트 시
+  // 저장된 언어를 복원한다. (기본 언어 → 저장 언어로 한 번 전환될 수 있음)
+  useEffect(() => {
+    const saved = localStorage.getItem("appLanguage");
+    if (saved === "en" || saved === "ja" || saved === "ko") {
+      setLangState((prev) => (prev !== saved ? saved : prev));
+    }
+  }, []);
 
   const setLang = (value: Lang) => {
     setLangState(value);

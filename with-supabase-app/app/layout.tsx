@@ -11,9 +11,6 @@ import { AuthButton } from "@/components/auth-button";
 import { EnvVarWarning } from "@/components/env-var-warning";
 import { hasEnvVars } from "@/lib/utils";
 import { Suspense } from "react";
-import { cookies } from "next/headers";
-import type { Lang } from "@/lib/translations";
-import { createClient } from "@/lib/supabase/server";
 import "./globals.css";
 
 const defaultUrl = process.env.VERCEL_URL
@@ -39,7 +36,7 @@ const orbitron = Orbitron({
   weight: ["400", "500", "600", "700", "800", "900"],
 });
 
-async function AppShell({
+function AppShell({
   children,
   authButton,
   mobileAuthButton,
@@ -48,33 +45,10 @@ async function AppShell({
   authButton: React.ReactNode;
   mobileAuthButton: React.ReactNode;
 }) {
-  const [cookieStore, supabase] = await Promise.all([
-    cookies(),
-    createClient(),
-  ]);
-  const langCookie = cookieStore.get("appLanguage")?.value;
-
-  // 로그인 사용자는 DB 언어 우선, 비로그인은 쿠키 fallback
-  let initialLang: Lang = langCookie === "en" || langCookie === "ja" ? langCookie : "ko";
-  try {
-    const { data: claimsData } = await supabase.auth.getClaims();
-    const claims = claimsData?.claims;
-    if (claims) {
-      const { data } = await supabase
-        .from("user_info")
-        .select("language")
-        .eq("id", claims.sub)
-        .single();
-      if (data?.language === "en" || data?.language === "ja" || data?.language === "ko") {
-        initialLang = data.language;
-      }
-    }
-  } catch {
-    // fallback to cookie
-  }
-
+  // 쿠키/인증을 서버에서 읽지 않아 이 트리는 정적으로 프리렌더된다.
+  // 언어는 클라이언트(LanguageProvider)가 localStorage에서 복원한다.
   return (
-    <LanguageProvider initialLang={initialLang}>
+    <LanguageProvider>
       <AnimeModeProvider>
         <ScrollToTop />
         <CollapsibleHeader
