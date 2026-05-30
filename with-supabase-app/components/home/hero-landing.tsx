@@ -2,20 +2,17 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
+import Image from "next/image";
 import Link from "next/link";
 import { Sword, MessageSquare, Archive, ChevronRight } from "lucide-react";
 import { useLanguage } from "@/components/language-context";
-
-interface HeroLandingProps {
-  isLoggedIn: boolean;
-}
 
 const menuIcons = [Sword, MessageSquare, Archive];
 const menuIds = ["practice", "chat", "problems"] as const;
 const menuSubLabels: string[] = [];
 const menuHrefs = ["/practice", "/chat", "/problems"];
 
-export function HeroLanding({ isLoggedIn }: HeroLandingProps) {
+export function HeroLanding() {
   const { tr } = useLanguage();
   const [selectedIndex, setSelectedIndex] = useState(0);
   const [showCursor, setShowCursor] = useState(true);
@@ -64,13 +61,17 @@ export function HeroLanding({ isLoggedIn }: HeroLandingProps) {
   return (
     <div className="h-screen w-full relative flex flex-col items-center justify-center p-4 overflow-hidden">
       {/* Pixelated background image */}
-      <div
-        className="absolute -top-12 left-0 right-0 bottom-0 bg-cover bg-center bg-no-repeat pixelated-bg"
-        style={{
-          backgroundImage: "url('/hero-bg.jpg')",
-          filter: "contrast(1.1) saturate(1.2)",
-        }}
-      />
+      <div className="absolute -top-12 left-0 right-0 bottom-0 overflow-hidden">
+        <Image
+          src="/hero-bg.jpg"
+          alt=""
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover pixelated-bg"
+          style={{ filter: "contrast(1.1) saturate(1.2)" }}
+        />
+      </div>
       {/* Dot pattern overlay for pixel art effect */}
       <div className="absolute -top-12 left-0 right-0 bottom-0 dot-overlay" />
       {/* Dark overlay for better text readability */}
