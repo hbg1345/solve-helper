@@ -1,5 +1,6 @@
 "use server";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import { fetchUserInfo } from "@qatadaazzeh/atcoder-api";
 import { getRecommendedProblems, type RecommendedProblem } from "@/lib/atcoder/recommendations";
 
@@ -1048,7 +1049,8 @@ export async function getRatingHistory(
 export async function refreshRatingHistory(
   username: string
 ): Promise<{ success: boolean; count: number }> {
-  const supabase = await createClient();
+  // contest_history 쓰기는 RLS 우회가 필요하므로 service_role 사용
+  const supabase = createServiceRoleClient();
 
   try {
     // AtCoder API에서 히스토리 가져오기

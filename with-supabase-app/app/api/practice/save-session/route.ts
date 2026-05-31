@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import { NextRequest, NextResponse } from "next/server";
 
 export async function POST(request: NextRequest) {
@@ -28,7 +29,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { data, error } = await supabase
+    // practice_sessions 쓰기는 RLS 우회가 필요하므로 service_role
+    const { data, error } = await createServiceRoleClient()
       .from("practice_sessions")
       .insert({
         user_id: userData.user.id,

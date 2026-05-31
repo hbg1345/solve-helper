@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { generateText } from "ai";
 import { google } from "@ai-sdk/google";
 import { createClient } from "@/lib/supabase/server";
+import { createServiceRoleClient } from "@/lib/supabase/service-role";
 
 const MODEL_NAME = "gemini-2.5-flash-lite";
 
@@ -9,6 +10,14 @@ export const maxDuration = 60;
 
 export async function POST(request: NextRequest) {
   try {
+    const supabase = await createClient();
+
+    // 인증: 로그인한 사용자만 번역 호출 가능 (공개 엔드포인트 비용 남용 방지)
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { content, targetLang, problemUrl } = await request.json();
 
     if (!content) {
@@ -24,8 +33,6 @@ export async function POST(request: NextRequest) {
         { status: 400 }
       );
     }
-
-    const supabase = await createClient();
 
     // problemUrl이 있으면 캐시 확인
     if (problemUrl) {
@@ -102,9 +109,9 @@ Return ONLY the translated HTML without any explanation.`;
 
     const translatedContent = result.text;
 
-    // problemUrl이 있으면 캐시에 저장
+    // problemUrl이 있으면 캐시에 저장 (쓰기는 RLS 우회가 필요하므로 service_role)
     if (problemUrl && translatedContent) {
-      const { error: upsertError } = await supabase
+      const { error: upsertError } = await createServiceRoleClient()
         .from("problem_translations")
         .upsert(
           {
